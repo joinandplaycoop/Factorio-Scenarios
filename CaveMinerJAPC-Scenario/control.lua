@@ -13,17 +13,17 @@ require "score"
 ---- enable modules here ----
 --require "maps.tools.map_pregen"
 require "maps.tools.cheat_mode"
---require "maps.modules.hunger"
---require "maps.modules.fish_respawner"
+require "maps.modules.hunger"
+require "maps.modules.fish_respawner"
 --require "maps.modules.rocket_launch_always_yields_science"
 --require "maps.modules.launch_10000_fish_to_win"
 --require "maps.modules.dynamic_landfill"
 --require "maps.modules.restrictive_fluid_mining"
 --require "maps.modules.fluids_are_explosive"
---require "maps.modules.explosives_are_explosive"
+require "maps.modules.explosives_are_explosive"
 --require "maps.modules.explosive_biters"
 --require "maps.modules.teleporting_worms"
---require "maps.modules.railgun_enhancer"
+require "maps.modules.railgun_enhancer"
 -----------------------------
 
 ---- enable maps here ----
