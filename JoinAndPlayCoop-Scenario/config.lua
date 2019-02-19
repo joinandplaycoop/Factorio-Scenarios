@@ -19,7 +19,7 @@ MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill, Und
 -- This stuff is shown in the welcome GUI. Make sure it's valid.
 WELCOME_MSG_TITLE = "Join and play Coop !!! RAILWORLD "
 SERVER_MSG = "Rules: Be polite. Ask before changing other players's stuff. Every hour permissions are applied\n"..
-"Here you can join the discord : poli.fun/discord"
+"Here you can join the discord : poli.fun/discord Here you can look at the status of the server factorio-status.poli.fun"
 
 SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
 "0.16 experimental release. Tweaks to fix spawn issues / text / difficulty.\n"..
