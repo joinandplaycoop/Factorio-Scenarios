@@ -18,7 +18,7 @@ MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill, Und
 
 -- This stuff is shown in the welcome GUI. Make sure it's valid.
 WELCOME_MSG_TITLE = "Join and play Coop !!! RAILWORLD "
-SERVER_MSG = "Rules: Be polite. Ask before changing other players's stuff. Have fun!\n"..
+SERVER_MSG = "Rules: Be polite. Ask before changing other players's stuff. Every hour permissions are applied\n"..
 "Here you can join the discord : poli.fun/discord"
 
 SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
