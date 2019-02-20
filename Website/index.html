@@ -10,7 +10,7 @@
 	<script>
 		function GetClock() {
 		var d = new Date();
-		document.getElementById('time').innerHTML = d.toUTCString().substring(17, 26);
+		document.getElementById('time').innerHTML = d.toString().substring(16, 25);
 		}
 
 		$(document).ready(function () {
@@ -24,7 +24,7 @@
 <body>
     <center>
         <div id="time_wrapper">
-            GMT:
+            Time UTC +1:
             <div id="time"></div>
         </div>
     </center>
