@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <title>Redmew</title>
+    <link rel="stylesheet" type="text/css" href="css.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script>function GetClock() {
+    var d = new Date();
+    document.getElementById('time').innerHTML = d.toUTCString().substring(17, 26);
+}
+
+$(document).ready(function () {
+    GetClock();
+    setInterval(GetClock, 100);
+})
+</script>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+</head>
+
+<body>
+    <center>
+        <div id="time_wrapper">
+            GMT:
+            <div id="time"></div>
+        </div>
+    </center>
+    <div class="menu">
+        <div id="menu_header">Join And Play COOP !</div>
+        <a href="https://github.com/IIPoliII/Factorio-Scenarios"><div class="menu_button">Scenario</div></a>
+        <a href="http://factorio-saves.poli.fun"><div class="menu_button">Saves</div></a>
+        <a href="https://poli.fun/discord"><div class="menu_button">Discord</div></a>
+        <a href="http://factorio-status.poli.fun"><div class="menu_button">Status - Player List</div></a>
+		<a href="https://poli.fun"><div class="menu_button">Owner Website</div></a>
+        <div id="menu_footer"></div>
+    </div>
+
+</body>
+
+</html>
