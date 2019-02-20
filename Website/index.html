@@ -7,16 +7,17 @@
     <title>Join And Play COOP !</title>
     <link rel="stylesheet" type="text/css" href="css.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-	<script>function GetClock() {
-    var d = new Date();
-    document.getElementById('time').innerHTML = d.toUTCString().substring(17, 26);
-}
+	<script>
+		function GetClock() {
+		var d = new Date();
+		document.getElementById('time').innerHTML = d.toUTCString().substring(17, 26);
+		}
 
-$(document).ready(function () {
-    GetClock();
-    setInterval(GetClock, 100);
-})
-</script>
+		$(document).ready(function () {
+			GetClock();
+			setInterval(GetClock, 100);
+		})
+	</script>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
 </head>
 
