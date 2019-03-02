@@ -18,7 +18,7 @@
 -- 7. For now, oarc spawns are deletion safe as well, but only immediate area.
 
 -- Generic Utility Includes
-require("oarc_utils")
+require("lib/oarc_utils")
 
 
 -- Default timeout of generated chunks
