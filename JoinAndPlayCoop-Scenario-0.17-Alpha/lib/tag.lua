@@ -17,7 +17,6 @@ local roles = {
   {display_name = "[Oil]"},
   {display_name = "[Smelt]"},
   {display_name = "[Rail]"},
-  {display_name = "[RAILLLLLLLLSSSSSSSSSS!!!!!!]"},
   {display_name = "[Defense]"},
   {display_name = "[Circuits]"},
   {display_name = "[Science!]"},
