@@ -395,8 +395,10 @@ local function render_arena_chunk(event)
 	local left_top = event.area.left_top
 	
 	for _, entity in pairs(surface.find_entities_filtered({area = event.area})) do
-		if entity.name ~= "player" then
-			entity.destroy()
+		if entity.valid then
+			if entity.name ~= "player" then
+				entity.destroy()
+			end
 		end
 	end
 	
@@ -620,8 +622,7 @@ local function on_player_died(event)
 		if target_player.name ~= player.name then
 			player.print(player.name .. " was killed" .. str, { r=0.99, g=0.0, b=0.0})
 		end
-	end
-	
+	end	
 end
 
 ----------share chat with player and spectator force-------------------

@@ -68,7 +68,7 @@ local function show_score(player)
 	local str = "0"
 	if score.rocket_launches then str = tostring(score.rocket_launches) end
 	local l = t.add { type = "label", caption = str}
-	l.style.font = "default-frame"
+	l.style.font = "default-listbox"
 	l.style.font_color = { r=0.9, g=0.9, b=0.9}
 	l.style.minimal_width = 123
 
@@ -78,7 +78,7 @@ local function show_score(player)
 	l.style.minimal_width = 100
 	
 	local l = t.add { type = "label", caption = tostring(get_total_biter_killcount(player.force))}
-	l.style.font = "default-frame"
+	l.style.font = "default-listbox"
 	l.style.font_color = { r=0.9, g=0.9, b=0.9}
 	l.style.minimal_width = 145
 	
@@ -307,7 +307,7 @@ local function on_rocket_launched(event)
 	else
 		global.score[force_name].rocket_launches = global.score[force_name].rocket_launches + 1
 	end	
-	game.print ("A rocket has been launched!", {r=0.98, g=0.66, b=0.22})		
+	--game.print ("A rocket has been launched!", {r=0.98, g=0.66, b=0.22})		
 	refresh_score_full()
 end
 

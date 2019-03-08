@@ -1,7 +1,6 @@
--- just an empty map
+-- just an empty map for testing thingies
 local event = require 'utils.event'
-
-
+local map_functions = require "maps.tools.map_functions"
 
 function dump_boom_layout()
 	local surface = game.surfaces["empty_map"]
@@ -40,13 +39,15 @@ local function on_chunk_generated(event)
 			right_bottom = {x = chunk_pos_x + 31, y = chunk_pos_y + 31}
 			}							
 	
-	surface.destroy_decoratives(area)
+	surface.destroy_decoratives({area = area})
 	local decoratives = {}	
 	
 	local entities = surface.find_entities(area)
 	for _, e in pairs(entities) do
-		if e.name ~= "player" then
-			e.destroy()				
+		if e.valid then
+			if e.name ~= "player" then
+				e.destroy()				
+			end
 		end
 	end
 	
@@ -57,7 +58,20 @@ local function on_chunk_generated(event)
 			table.insert(tiles, {name = "grass-1", position = pos}) 
 		end
 	end
-	surface.set_tiles(tiles,true)
+	surface.set_tiles(tiles,true)		
+end
+
+local function on_chunk_charted(event)
+	if not global.chunks_charted then global.chunks_charted = {} end
+	local surface = game.surfaces[event.surface_index]
+	local position = event.position
+	if global.chunks_charted[tostring(position.x) .. tostring(position.y)] then return end
+	global.chunks_charted[tostring(position.x) .. tostring(position.y)] = true
+	local force = event.force
+	
+	if position.x % 4 ~= 0 then return end
+	if position.y % 4 ~= 0 then return end
+	map_functions.draw_rainbow_patch_v2({x = position.x * 32, y = position.y * 32}, surface, 28, 1000)
 end
 
 local function on_player_joined_game(event)
@@ -74,18 +88,15 @@ local function on_player_joined_game(event)
 			["iron-ore"] = {frequency = "none", size = "none", richness = "none"},
 			["crude-oil"] = {frequency = "none", size = "none", richness = "none"},
 			["trees"] = {frequency = "none", size = "none", richness = "none"},
-			["enemy-base"] = {frequency = "none", size = "none", richness = "none"},
-			["grass"] = {frequency = "none", size = "none", richness = "none"},
-			["sand"] = {frequency = "none", size = "none", richness = "none"},
-			["desert"] = {frequency = "none", size = "none", richness = "none"},
-			["dirt"] = {frequency = "normal", size = "normal", richness = "normal"}
+			["enemy-base"] = {frequency = "none", size = "none", richness = "none"}
 		}
 		game.map_settings.pollution.pollution_restored_per_tree_damage = 0
 		game.create_surface("empty_map", map_gen_settings)		
 		game.forces["player"].set_spawn_position({0,0},game.surfaces["empty_map"])
 		local surface = game.surfaces["empty_map"]
 		
-		--create_cluster("crude-oil", {x=0,y=0}, 5, surface, 10, math.random(300000,400000))
+		--local radius = 512
+		--game.forces.player.chart(surface, {{x = -1 * radius, y = -1 * radius}, {x = radius, y = radius}})	
 		global.map_init_done = true						
 	end	
 	local surface = game.surfaces["empty_map"]
@@ -98,10 +109,10 @@ local function on_player_joined_game(event)
 	end	
 	if player.online_time < 10 then				
 		player.insert {name = 'raw-fish', count = 3}
-		player.insert {name = 'iron-axe', count = 1}
 		player.insert {name = 'light-armor', count = 1}
 	end	
 end
 
 event.add(defines.events.on_chunk_generated, on_chunk_generated)
+event.add(defines.events.on_chunk_charted, on_chunk_charted)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
