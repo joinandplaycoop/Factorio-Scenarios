@@ -31,7 +31,6 @@ SPAWN_WARN_MSG = "Due to the way this scenario works, it may take some time for 
 
 CONTACT_MSG = "Contact: admin@poli.fun (thanks to Oarc for the scenario) poli.fun/discord"
 
-
 -- This should be false for you, it's just a convenience for me.
 SERVER_OWNER_IS_OARC = false
 
@@ -61,6 +60,12 @@ ENABLE_UNDECORATOR = false
 -- Enable Tags
 ENABLE_TAGS = true
 
+-- Enable Long Reach
+ENABLE_LONGREACH = true
+
+-- Enable Autofill
+ENABLE_AUTOFILL = true
+
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
 PLAYER_LIST_OFFLINE_PLAYERS = true -- List offline players as well.
@@ -75,7 +80,7 @@ ENABLE_REGROWTH = false
 -- If you have regrowth enabled, this should also be enabled.
 -- It removes bases for players that join and leave the game quickly.
 -- This can also be used without enabling regrowth.
-ENABLE_ABANDONED_BASE_REMOVAL = false
+ENABLE_ABANDONED_BASE_REMOVAL = true
 
 --------------------------------------------------------------------------------
 -- Spawn Options
@@ -154,12 +159,12 @@ WATER_SPAWN_OFFSET_Y = -38
 WATER_SPAWN_LENGTH = 8
 
 -- Start resource amounts (per tile/oil spot)
-START_IRON_AMOUNT = 1500
+START_IRON_AMOUNT = 2000
 START_COPPER_AMOUNT = 1500
-START_STONE_AMOUNT = 1000
+START_STONE_AMOUNT = 1500
 START_COAL_AMOUNT = 1500
 START_URANIUM_AMOUNT = 1000
-START_OIL_AMOUNT = 300000
+START_OIL_AMOUNT = 600000
 
 -- Start resource shape
 -- If this is true, it will be a circle
@@ -215,15 +220,20 @@ SPAWN_TREE_OCTAGON_ENABLED = true
 
 -- Safe area has no aliens
 -- +/- this in x and y direction
-SAFE_AREA_TILE_DIST = CHUNK_SIZE*5
+SAFE_AREA_TILE_DIST = CHUNK_SIZE*20
 
--- Warning area has reduced aliens
+-- Warning area has significantly reduced aliens
 -- +/- this in x and y direction
-WARNING_AREA_TILE_DIST = CHUNK_SIZE*10
+WARNING_AREA_TILE_DIST = CHUNK_SIZE*40
 
 -- 1 : X (spawners alive : spawners destroyed) in this area
-WARN_AREA_REDUCTION_RATIO = 10
+WARN_AREA_REDUCTION_RATIO = 80
 
+-- Danger area has slightly reduce aliens
+REDUCED_DANGER_AREA_TILE_DIST = CHUNK_SIZE*120
+
+-- 1 : X (spawners alive : spawners destroyed) in this area
+REDUCED_DANGER_AREA_REDUCTION_RATIO = 20
 
 ---------------------------------------
 -- Other Forces/Teams Options
@@ -261,21 +271,16 @@ RESPAWN_COOLDOWN_TICKS = TICKS_PER_MINUTE * RESPAWN_COOLDOWN_IN_MINUTES
 MIN_ONLINE_TIME_IN_MINUTES = 15
 MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 
-
 --------------------------------------------------------------------------------
--- Alien Options
+-- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)
+-- These things were added from other people's requests/changes.
+-- It is very very basic only, nothing fancy.
 --------------------------------------------------------------------------------
+-- Enable this to disable some basic things like friendly fire, deconstructing from map view, etc.
+ENABLE_ANTI_GRIEFING = true
 
--- Enable/Disable enemy expansion
-ENEMY_EXPANSION = false
-
--- Divide the alien evolution factors by this number to reduce it (or multiply if < 1)
-ENEMY_TIME_FACTOR_DISABLE = false -- Set this to true to disable time based evolution completely.
-ENEMY_TIME_FACTOR_DIVISOR = 10
-ENEMY_POLLUTION_FACTOR_DISABLE = false -- Set this to true to disable pollution based evolution completely.
-ENEMY_POLLUTION_FACTOR_DIVISOR = 10
-ENEMY_DESTROY_FACTOR_DISABLE = false -- Set this to true to disable spawner destruction based evolution completely.
-ENEMY_DESTROY_FACTOR_DIVISOR = 1
+-- Makes blueprint ghosts dissapear if they have been placed longer than this
+GHOST_TIME_TO_LIVE = 15 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
 
 --------------------------------------------------------------------------------
 -- Frontier Rocket Silo Options
@@ -318,25 +323,49 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 --------------------------------------------------------------------------------
 -- MAP CONFIGURATION OPTIONS
 -- In past versions I had a way to config map settings here to be used for cmd
--- line launching, but now you should just be using --map-get-settings option
+-- line launching, but now you should just be using --map-gen-settings option
 -- since it works with --start-server-load-scenario
 -- Read the README.md file for instructions.
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- Alien Options
+-- I WANTED to use --map-settings but it doesn't seem to work with
+-- cmd line --start-server-load-scenario. So we're back to this. Le sigh.
+--------------------------------------------------------------------------------
+
+-- You must disable this if you want to configure the enemy settings from
+-- the game GUI.
+CMD_LINE_GEN = true
+
+-- Enable/Disable enemy expansion
+ENEMY_EXPANSION = true
+
+-- Divide the alien evolution factors by this number to reduce it (or multiply if < 1)
+ENEMY_TIME_FACTOR_DISABLE = false -- Set this to true to disable time based evolution completely.
+ENEMY_TIME_FACTOR_DIVISOR = 10
+ENEMY_POLLUTION_FACTOR_DISABLE = false -- Set this to true to disable pollution based evolution completely.
+ENEMY_POLLUTION_FACTOR_DIVISOR = 10
+ENEMY_DESTROY_FACTOR_DISABLE = false -- Set this to true to disable spawner destruction based evolution completely.
+ENEMY_DESTROY_FACTOR_DIVISOR = 1
+
+-- Adjust biter type spawning based on distance to spawns.
+OARC_MODIFIED_ENEMY_SPAWNING = true
 
 --------------------------------------------------------------------------------
 -- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)
 -- These things were added from other people's requests/changes and are disabled by default.
 --------------------------------------------------------------------------------
 -- Enable this to disable some basic things like friendly fire, deconstructing from map view, etc.
-ENABLE_ANTI_GRIEFING = false
+-- ENABLE_ANTI_GRIEFING = false
 
 -- Makes blueprint ghosts dissapear if they have been placed longer than this
-GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
+-- GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
 
 -------------------------------------------------------------------------------
 -- DEBUG / Custom stuff
 --------------------------------------------------------------------------------
+
 OARC_DIFFICULTY_CUSTOM = false
 
 -- DEBUG prints for me

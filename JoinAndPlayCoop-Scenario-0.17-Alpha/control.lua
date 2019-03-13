@@ -48,55 +48,19 @@ require("lib/separate_spawns_guis")
 GAME_SURFACE_NAME="nauvis"
 
 --------------------------------------------------------------------------------
--- Rocket Launch Event Code
--- Controls the "win condition"
---------------------------------------------------------------------------------
-function RocketLaunchEvent(event)
-    local force = event.rocket.force
-    
-    if event.rocket.get_item_count("satellite") == 0 then
-        for index, player in pairs(force.players) do
-            player.print("You launched the rocket, but you didn't put a satellite inside.")
-        end
-        return
-    end
-
-    if not global.satellite_sent then
-        global.satellite_sent = {}
-    end
-
-    if global.satellite_sent[force.name] then
-        global.satellite_sent[force.name] = global.satellite_sent[force.name] + 1   
-    else
-        game.set_game_state{game_finished=true, player_won=true, can_continue=true}
-        global.satellite_sent[force.name] = 1
-    end
-    
-    for index, player in pairs(force.players) do
-        if player.gui.left.rocket_score then
-            player.gui.left.rocket_score.rocket_count.caption = tostring(global.satellite_sent[force.name])
-        else
-            local frame = player.gui.left.add{name = "rocket_score", type = "frame", direction = "horizontal", caption="Score"}
-            frame.add{name="rocket_count_label", type = "label", caption={"", "Satellites launched", ":"}}
-            frame.add{name="rocket_count", type = "label", caption=tostring(global.satellite_sent[force.name])}
-        end
-    end
-end
-
-
---------------------------------------------------------------------------------
 -- ALL EVENT HANLDERS ARE HERE IN ONE PLACE!
 --------------------------------------------------------------------------------
-
 
 ----------------------------------------
 -- On Init - only runs once the first 
 --   time the game starts
 ----------------------------------------
 script.on_init(function(event)
-  
+
     -- Configures the map settings for enemies
     -- This controls evolution growth factors and enemy expansion settings.
+    -- The only reason this is here is because --map-settings doesn't seem to work
+    -- with --start-server-load-scenario
     ConfigureAlienStartingParams()
 
     if ENABLE_SEPARATE_SPAWNS then
@@ -218,6 +182,10 @@ script.on_event(defines.events.on_player_created, function(event)
     -- May change this to Lobby in the future.
     game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
 
+    if ENABLE_LONGREACH then
+        GivePlayerLongReach(game.players[event.player_index])
+    end
+
     if not ENABLE_SEPARATE_SPAWNS then
         PlayerSpawnItems(event)
     else
@@ -232,6 +200,9 @@ script.on_event(defines.events.on_player_respawned, function(event)
    
     PlayerRespawnItems(event)
 
+    if ENABLE_LONGREACH then
+        GivePlayerLongReach(game.players[event.player_index])
+    end
 end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
@@ -241,8 +212,16 @@ script.on_event(defines.events.on_player_left_game, function(event)
 end)
 
 script.on_event(defines.events.on_built_entity, function(event)
+    if ENABLE_AUTOFILL then
+        Autofill(event)
+    end
+
     if ENABLE_REGROWTH then
         OarcRegrowthOffLimitsChunk(event.created_entity.position)
+    end
+
+    if ENABLE_ANTI_GRIEFING then
+        SetItemBlueprintTimeToLive(event)
     end
 end)
 
@@ -320,3 +299,49 @@ script.on_event(defines.events.on_research_finished, function(event)
     end
 end)
 
+----------------------------------------
+-- On Entity Spawned
+-- This is where I modify biter spawning based on location and other factors.
+----------------------------------------
+script.on_event(defines.events.on_entity_spawned, function(event)
+    if (OARC_MODIFIED_ENEMY_SPAWNING) then
+        ModifyEnemySpawnsNearPlayerStartingAreas(event)
+    end
+end)
+-- on_biter_base_built -- Worth considering for later.
+
+--------------------------------------------------------------------------------
+-- Rocket Launch Event Code
+-- Controls the "win condition"
+--------------------------------------------------------------------------------
+function RocketLaunchEvent(event)
+    local force = event.rocket.force
+    
+    if event.rocket.get_item_count("satellite") == 0 then
+        for index, player in pairs(force.players) do
+            player.print("You launched the rocket, but you didn't put a satellite inside.")
+        end
+        return
+    end
+
+    if not global.satellite_sent then
+        global.satellite_sent = {}
+    end
+
+    if global.satellite_sent[force.name] then
+        global.satellite_sent[force.name] = global.satellite_sent[force.name] + 1   
+    else
+        game.set_game_state{game_finished=true, player_won=true, can_continue=true}
+        global.satellite_sent[force.name] = 1
+    end
+    
+    for index, player in pairs(force.players) do
+        if player.gui.left.rocket_score then
+            player.gui.left.rocket_score.rocket_count.caption = tostring(global.satellite_sent[force.name])
+        else
+            local frame = player.gui.left.add{name = "rocket_score", type = "frame", direction = "horizontal", caption="Score"}
+            frame.add{name="rocket_count_label", type = "label", caption={"", "Satellites launched", ":"}}
+            frame.add{name="rocket_count", type = "label", caption=tostring(global.satellite_sent[force.name])}
+        end
+    end
+end

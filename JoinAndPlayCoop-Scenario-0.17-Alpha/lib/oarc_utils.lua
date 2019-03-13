@@ -426,28 +426,90 @@ function ReduceAliensInArea(surface, area, reductionFactor)
             entity.destroy()
         end
     end
+end
 
-    -- Remove all big and huge worms
-    for _, entity in pairs(surface.find_entities_filtered{area = area, name = "medium-worm-turret"}) do
-            entity.destroy()
-    end
-    for _, entity in pairs(surface.find_entities_filtered{area = area, name = "big-worm-turret"}) do
-            entity.destroy()
-    end
-    for _, entity in pairs(surface.find_entities_filtered{area = area, name = "behemoth-worm-turret"}) do
-            entity.destroy()
+-- Downgrades worms in an area based on chance.
+-- 100% small would mean all worms are changed to small.
+function DowngradeWormsInArea(surface, area, small_percent, medium_percent, big_percent)
+
+    local worm_types = {"small-worm-turret", "medium-worm-turret", "big-worm-turret", "behemoth-worm-turret"}
+
+    for _, entity in pairs(surface.find_entities_filtered{area = area, name = worm_types}) do
+        
+        -- Roll a number between 0-100
+        local rand_percent = math.random(0,100)
+        local worm_pos = entity.position
+        local worm_name = entity.name
+
+        -- If number is more than small percent, change to small
+        if (rand_percent <= small_percent) then
+            if (not (worm_name == "small-worm-turret")) then
+                entity.destroy()
+                surface.create_entity{name = "small-worm-turret", position = worm_pos, force = game.forces.enemy}
+            end            
+
+        -- ELSE If number is more than medium percent, change to small
+        elseif (rand_percent <= medium_percent) then
+            if (not (worm_name == "medium-worm-turret")) then
+                entity.destroy()
+                surface.create_entity{name = "medium-worm-turret", position = worm_pos, force = game.forces.enemy}
+            end
+
+        -- ELSE If number is more than big percent, change to small
+        elseif (rand_percent <= big_percent) then
+            if (not (worm_name == "big-worm-turret")) then
+                entity.destroy()
+                surface.create_entity{name = "big-worm-turret", position = worm_pos, force = game.forces.enemy}
+            end
+
+        -- ELSE ignore it.
+        end
     end
 end
 
+function DowngradeWormsDistanceBasedOnChunkGenerate(event)
+    if (getDistance({x=0,y=0}, event.area.left_top) < (NEAR_MAX_DIST*CHUNK_SIZE)) then
+        DowngradeWormsInArea(event.surface, event.area, 100, 100, 100)
+    elseif (getDistance({x=0,y=0}, event.area.left_top) < (FAR_MIN_DIST*CHUNK_SIZE)) then
+        DowngradeWormsInArea(event.surface, event.area, 50, 90, 100)
+    elseif (getDistance({x=0,y=0}, event.area.left_top) < (FAR_MAX_DIST*CHUNK_SIZE)) then
+        DowngradeWormsInArea(event.surface, event.area, 20, 80, 97)
+    else
+        DowngradeWormsInArea(event.surface, event.area, 0, 20, 85)
+    end
+end
+
+-- A function to help me remove worms in an area.
+-- Yeah kind of an unecessary wrapper, but makes my life easier to remember the worm types.
+function RemoveWormsInArea(surface, area, small, medium, big, behemoth)
+    local worm_types = {}
+
+    if (small) then
+        table.insert(worm_types, "small-worm-turret")
+    end
+    if (medium) then
+        table.insert(worm_types, "medium-worm-turret")
+    end
+    if (big) then
+        table.insert(worm_types, "big-worm-turret")
+    end
+    if (behemoth) then
+        table.insert(worm_types, "behemoth-worm-turret")
+    end
+    
+    -- Destroy
+    if (TableLength(worm_types) > 0) then
+        for _, entity in pairs(surface.find_entities_filtered{area = area, name = worm_types}) do
+                entity.destroy()
+        end
+    else
+        DebugPrint("RemoveWormsInArea had empty worm_types list!")
+    end
+end
 
 -- Adjust alien params
+-- I'll probably remove this if --map-settings works with command line launches.
 function ConfigureAlienStartingParams()
-
-    -- These are the default values for reference:
-    -- "time_factor": 0.000004,
-    -- "destroy_factor": 0.002,
-    -- "pollution_factor": 0.000015
-
     if ENEMY_TIME_FACTOR_DISABLE then
         game.map_settings.enemy_evolution.time_factor = 0
     else
@@ -468,122 +530,27 @@ function ConfigureAlienStartingParams()
     
     game.map_settings.enemy_expansion.enabled = ENEMY_EXPANSION
 
+    -- This is my own extra tweaks, still pretty experimental.
     if (OARC_DIFFICULTY_CUSTOM) then
+        -- More diffusion / larger area.
+        game.map_settings.pollution.diffusion_ratio = 0.06 
 
-        game.map_settings.pollution.diffusion_ratio = 0.08
-        game.map_settings.pollution.ageing = 1
+        -- Biters expand further.
+        game.map_settings.enemy_expansion.max_expansion_distance = 20 
 
-        game.map_settings.enemy_expansion.max_expansion_distance = 20
-
-        game.map_settings.enemy_expansion.settler_group_min_size = 2
+        -- Small biter groups.
+        game.map_settings.enemy_expansion.settler_group_min_size = 2 
         game.map_settings.enemy_expansion.settler_group_max_size = 10
 
+        -- Longer cooldown / slower expansion.
         game.map_settings.enemy_expansion.min_expansion_cooldown = TICKS_PER_MINUTE*15
         game.map_settings.enemy_expansion.max_expansion_cooldown = TICKS_PER_MINUTE*60
 
+        -- Smaller groups, more frequent?
         game.map_settings.unit_group.min_group_gathering_time = TICKS_PER_MINUTE
         game.map_settings.unit_group.max_group_gathering_time = 4 * TICKS_PER_MINUTE
         game.map_settings.unit_group.max_wait_time_for_late_members = 1 * TICKS_PER_MINUTE
         game.map_settings.unit_group.max_unit_group_size = 15
-
-        -- game.map_settings.pollution.enabled=true,
-        -- -- these are values for 60 ticks (1 simulated second)
-        -- --
-        -- -- amount that is diffused to neighboring chunk
-        -- -- (possibly repeated for other directions as well)
-        -- game.map_settings.pollution.diffusion_ratio=0.02,
-        -- -- this much PUs must be on the chunk to start diffusing
-        -- game.map_settings.pollution.min_to_diffuse=15,
-        -- -- constant modifier a percentage of 1 - the pollution eaten by a chunks tiles
-        -- game.map_settings.pollution.ageing=1,
-        -- -- anything bigger than this is visualised as this value
-        -- game.map_settings.pollution.expected_max_per_chunk=7000,
-        -- -- anything lower than this (but > 0) is visualised as this value
-        -- game.map_settings.pollution.min_to_show_per_chunk=700,
-        -- game.map_settings.pollution.min_pollution_to_damage_trees = 3500,
-        -- game.map_settings.pollution.pollution_with_max_forest_damage = 10000,
-        -- game.map_settings.pollution.pollution_per_tree_damage = 2000,
-        -- game.map_settings.pollution.pollution_restored_per_tree_damage = 500,
-        -- game.map_settings.pollution.max_pollution_to_restore_trees = 1000
-
-
-        -- game.map_settings.enemy_expansion.enabled = true,
-        -- -- Distance in chunks from the furthest base around.
-        -- -- This prevents expansions from reaching too far into the
-        -- -- player's territory
-        -- game.map_settings.enemy_expansion.max_expansion_distance = 7,
-
-        -- game.map_settings.enemy_expansion.friendly_base_influence_radius = 2,
-        -- game.map_settings.enemy_expansion.enemy_building_influence_radius = 2,
-
-        -- -- A candidate chunk's score is given as follows:
-        -- --   player = 0
-        -- --   for neighbour in all chunks within enemy_building_influence_radius from chunk:
-        -- --     player += number of player buildings on neighbour
-        -- --             * building_coefficient
-        -- --             * neighbouring_chunk_coefficient^distance(chunk, neighbour)
-        -- --
-        -- --   base = 0
-        -- --   for neighbour in all chunk within friendly_base_influence_radius from chunk:
-        -- --     base += num of enemy bases on neighbour
-        -- --           * other_base_coefficient
-        -- --           * neighbouring_base_chunk_coefficient^distance(chunk, neighbour)
-        -- --
-        -- --   score(chunk) = 1 / (1 + player + base)
-        -- --
-        -- -- The iteration is over a square region centered around the chunk for which the calculation is done,
-        -- -- and includes the central chunk as well. distance is the Manhattan distance, and ^ signifies exponentiation.
-        -- game.map_settings.enemy_expansion.building_coefficient = 0.1,
-        -- game.map_settings.enemy_expansion.other_base_coefficient = 2.0,
-        -- game.map_settings.enemy_expansion.neighbouring_chunk_coefficient = 0.5,
-        -- game.map_settings.enemy_expansion.neighbouring_base_chunk_coefficient = 0.4;
-
-        -- -- A chunk has to have at most this much percent unbuildable tiles for it to be considered a candidate.
-        -- -- This is to avoid chunks full of water to be marked as candidates.
-        -- game.map_settings.enemy_expansion.max_colliding_tiles_coefficient = 0.9,
-
-        -- -- Size of the group that goes to build new base (in game this is multiplied by the
-        -- -- evolution factor).
-        -- game.map_settings.enemy_expansion.settler_group_min_size = 5,
-        -- game.map_settings.enemy_expansion.settler_group_max_size = 20,
-
-        -- -- Ticks to expand to a single
-        -- -- position for a base is used.
-        -- --
-        -- -- cooldown is calculated as follows:
-        -- --   cooldown = lerp(max_expansion_cooldown, min_expansion_cooldown, -e^2 + 2 * e),
-        -- -- where lerp is the linear interpolation function, and e is the current evolution factor.
-        -- game.map_settings.enemy_expansion.min_expansion_cooldown = 4 * 3600,
-        -- game.map_settings.enemy_expansion.max_expansion_cooldown = 60 * 3600
-
-        -- -- pollution triggered group waiting time is a random time between min and max gathering time
-        -- game.map_settings.unit_group.min_group_gathering_time = 3600,
-        -- game.map_settings.unit_group.max_group_gathering_time = 10 * 3600,
-        -- -- after the gathering is finished the group can still wait for late members,
-        -- -- but it doesn't accept new ones anymore
-        -- game.map_settings.unit_group.max_wait_time_for_late_members = 2 * 3600,
-        -- -- limits for group radius (calculated by number of numbers)
-        -- game.map_settings.unit_group.max_group_radius = 30.0,
-        -- game.map_settings.unit_group.min_group_radius = 5.0,
-        -- -- when a member falls behind the group he can speedup up till this much of his regular speed
-        -- game.map_settings.unit_group.max_member_speedup_when_behind = 1.4,
-        -- -- When a member gets ahead of its group, it will slow down to at most this factor of its speed
-        -- game.map_settings.unit_group.max_member_slowdown_when_ahead = 0.6,
-        -- -- When members of a group are behind, the entire group will slow down to at most this factor of its max speed
-        -- game.map_settings.unit_group.max_group_slowdown_factor = 0.3,
-        -- -- If a member falls behind more than this times the group radius, the group will slow down to max_group_slowdown_factor
-        -- game.map_settings.unit_group.max_group_member_fallback_factor = 3,
-        -- -- If a member falls behind more than this time the group radius, it will be removed from the group.
-        -- game.map_settings.unit_group.member_disown_distance = 10,
-        -- game.map_settings.unit_group.tick_tolerance_when_member_arrives = 60,
-
-        -- -- Maximum number of automatically created unit groups gathering for attack at any time.
-        -- game.map_settings.unit_group.max_gathering_unit_groups = 30,
-
-        -- -- Maximum size of an attack unit group. This only affects automatically-created unit groups; manual groups
-        -- -- created through the API are unaffected.
-        -- game.map_settings.unit_group.max_unit_group_size = 200
-
     end
 end
 
@@ -729,43 +696,43 @@ function TransferItemMultipleTypes(srcInv, destEntity, itemNameArray, itemCount)
     return ret -- Return the last error code
 end
 
--- -- Autofills a turret with ammo
--- function AutofillTurret(player, turret)
---     local mainInv = player.get_inventory(defines.inventory.player_main)
+-- Autofills a turret with ammo
+function AutofillTurret(player, turret)
+    local mainInv = player.get_inventory(defines.inventory.player_main)
 
---     -- Attempt to transfer some ammo
---     local ret = TransferItemMultipleTypes(mainInv, turret, {"uranium-rounds-magazine", "piercing-rounds-magazine", "firearm-magazine"}, AUTOFILL_TURRET_AMMO_QUANTITY)
+    -- Attempt to transfer some ammo
+    local ret = TransferItemMultipleTypes(mainInv, turret, {"uranium-rounds-magazine", "piercing-rounds-magazine", "firearm-magazine"}, AUTOFILL_TURRET_AMMO_QUANTITY)
 
---     -- Check the result and print the right text to inform the user what happened.
---     if (ret > 0) then
---         -- Inserted ammo successfully
---         -- FlyingText("Inserted ammo x" .. ret, turret.position, my_color_red, player.surface)
---     elseif (ret == -1) then
---         FlyingText("Out of ammo!", turret.position, my_color_red, player.surface) 
---     elseif (ret == -2) then
---         FlyingText("Autofill ERROR! - Report this bug!", turret.position, my_color_red, player.surface)
---     end
--- end
+    -- Check the result and print the right text to inform the user what happened.
+    if (ret > 0) then
+        -- Inserted ammo successfully
+        -- FlyingText("Inserted ammo x" .. ret, turret.position, my_color_red, player.surface)
+    elseif (ret == -1) then
+        FlyingText("Out of ammo!", turret.position, my_color_red, player.surface) 
+    elseif (ret == -2) then
+        FlyingText("Autofill ERROR! - Report this bug!", turret.position, my_color_red, player.surface)
+    end
+end
 
--- -- Autofills a vehicle with fuel, bullets and shells where applicable
--- function AutoFillVehicle(player, vehicle)
---     local mainInv = player.get_inventory(defines.inventory.player_main)
+-- Autofills a vehicle with fuel, bullets and shells where applicable
+function AutoFillVehicle(player, vehicle)
+    local mainInv = player.get_inventory(defines.inventory.player_main)
 
---     -- Attempt to transfer some fuel
---     if ((vehicle.name == "car") or (vehicle.name == "tank") or (vehicle.name == "locomotive")) then
---         TransferItemMultipleTypes(mainInv, vehicle, {"nuclear-fuel", "rocket-fuel", "solid-fuel", "coal", "wood"}, 50)
---     end
+    -- Attempt to transfer some fuel
+    if ((vehicle.name == "car") or (vehicle.name == "tank") or (vehicle.name == "locomotive")) then
+        TransferItemMultipleTypes(mainInv, vehicle, {"nuclear-fuel", "rocket-fuel", "solid-fuel", "coal", "wood"}, 50)
+    end
 
---     -- Attempt to transfer some ammo
---     if ((vehicle.name == "car") or (vehicle.name == "tank")) then
---         TransferItemMultipleTypes(mainInv, vehicle, {"uranium-rounds-magazine", "piercing-rounds-magazine", "firearm-magazine"}, 100)
---     end
+    -- Attempt to transfer some ammo
+    if ((vehicle.name == "car") or (vehicle.name == "tank")) then
+        TransferItemMultipleTypes(mainInv, vehicle, {"uranium-rounds-magazine", "piercing-rounds-magazine", "firearm-magazine"}, 100)
+    end
 
---     -- Attempt to transfer some tank shells
---     if (vehicle.name == "tank") then
---         TransferItemMultipleTypes(mainInv, vehicle, {"explosive-uranium-cannon-shell", "uranium-cannon-shell", "explosive-cannon-shell", "cannon-shell"}, 100)
---     end
--- end
+    -- Attempt to transfer some tank shells
+    if (vehicle.name == "tank") then
+        TransferItemMultipleTypes(mainInv, vehicle, {"explosive-uranium-cannon-shell", "uranium-cannon-shell", "explosive-cannon-shell", "cannon-shell"}, 100)
+    end
+end
 
 --------------------------------------------------------------------------------
 -- Resource patch and starting area generation
@@ -890,160 +857,6 @@ end
 
 
 
--- Generate the basic starter resource around a given location.
-function GenerateStartingResources(surface, pos)
-    -- Generate stone
-    local stonePos = {x=pos.x+START_RESOURCE_STONE_POS_X,
-                  y=pos.y+START_RESOURCE_STONE_POS_Y}
-
-    -- Generate coal
-    local coalPos = {x=pos.x+START_RESOURCE_COAL_POS_X,
-                  y=pos.y+START_RESOURCE_COAL_POS_Y}
-
-    -- Generate copper ore
-    local copperOrePos = {x=pos.x+START_RESOURCE_COPPER_POS_X,
-                  y=pos.y+START_RESOURCE_COPPER_POS_Y}
-                  
-    -- Generate iron ore
-    local ironOrePos = {x=pos.x+START_RESOURCE_IRON_POS_X,
-                  y=pos.y+START_RESOURCE_IRON_POS_Y}
-
-    -- Generate uranium
-    local uraniumOrePos = {x=pos.x+START_RESOURCE_URANIUM_POS_X,
-                  y=pos.y+START_RESOURCE_URANIUM_POS_Y}
-
-    -- Tree generation is taken care of in chunk generation
-
-    -- Generate oil patches
-    oil_patch_x=pos.x+START_RESOURCE_OIL_POS_X
-    oil_patch_y=pos.y+START_RESOURCE_OIL_POS_Y
-    for i=1,START_RESOURCE_OIL_NUM_PATCHES do
-        surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
-                    position={oil_patch_x, oil_patch_y}})
-        oil_patch_x=oil_patch_x+START_RESOURCE_OIL_X_OFFSET
-        oil_patch_y=oil_patch_y+START_RESOURCE_OIL_Y_OFFSET
-    end
-
-    -- Generate Stone
-    GenerateResourcePatch(surface, "stone", START_RESOURCE_STONE_SIZE, stonePos, START_STONE_AMOUNT)
-
-    -- Generate Coal
-    GenerateResourcePatch(surface, "coal", START_RESOURCE_COAL_SIZE, coalPos, START_COAL_AMOUNT)
-
-    -- Generate Copper
-    GenerateResourcePatch(surface, "copper-ore", START_RESOURCE_COPPER_SIZE, copperOrePos, START_COPPER_AMOUNT)
-
-    -- Generate Iron
-    GenerateResourcePatch(surface, "iron-ore", START_RESOURCE_IRON_SIZE, ironOrePos, START_IRON_AMOUNT)
-
-    -- Generate Uranium
-    GenerateResourcePatch(surface, "uranium-ore", START_RESOURCE_URANIUM_SIZE, uraniumOrePos, START_URANIUM_AMOUNT)
-end
-
-
-
--- Clear the spawn areas.
--- This should be run inside the chunk generate event and be given a list of all
--- unique spawn points.
--- This clears enemies in the immediate area, creates a slightly safe area around it,
--- It no LONGER generates the resources though as that is now handled in a delayed event!
-function SetupAndClearSpawnAreas(surface, chunkArea, spawnPointTable)
-    for name,spawn in pairs(spawnPointTable) do
-
-        -- Create a bunch of useful area and position variables
-        local landArea = GetAreaAroundPos(spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+CHUNK_SIZE)
-        local safeArea = GetAreaAroundPos(spawn.pos, SAFE_AREA_TILE_DIST)
-        local warningArea = GetAreaAroundPos(spawn.pos, WARNING_AREA_TILE_DIST)
-        local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
-                                         y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
-        local spawnPosOffset = {x=spawn.pos.x+ENFORCE_LAND_AREA_TILE_DIST,
-                                         y=spawn.pos.y+ENFORCE_LAND_AREA_TILE_DIST}
-
-        -- Make chunks near a spawn safe by removing enemies
-        if CheckIfInArea(chunkAreaCenter,safeArea) then
-            RemoveAliensInArea(surface, chunkArea)
-        
-        -- Create a warning area with reduced enemies
-        elseif CheckIfInArea(chunkAreaCenter,warningArea) then
-            ReduceAliensInArea(surface, chunkArea, WARN_AREA_REDUCTION_RATIO)
-        end
-
-        -- If the chunk is within the main land area, then clear trees/resources
-        -- and create the land spawn areas (guaranteed land with a circle of trees)
-        if CheckIfInArea(chunkAreaCenter,landArea) then
-
-            -- Remove trees/resources inside the spawn area
-            RemoveInCircle(surface, chunkArea, "tree", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST)
-            RemoveInCircle(surface, chunkArea, "resource", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
-            RemoveInCircle(surface, chunkArea, "cliff", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
-            -- RemoveDecorationsArea(surface, chunkArea)
-
-            if (SPAWN_TREE_CIRCLE_ENABLED) then
-                CreateCropCircle(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
-            end
-            if (SPAWN_TREE_OCTAGON_ENABLED) then
-                CreateCropOctagon(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
-            end
-            if (SPAWN_MOAT_CHOICE_ENABLED) then
-                if (spawn.moat) then
-                    CreateMoat(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
-                end
-            end
-        end
-
-        -- Provide starting resources
-        -- This is run on the bottom, right chunk of the spawn area which should be
-        -- generated last, so it should work everytime.
-        -- if CheckIfInArea(spawnPosOffset,chunkArea) then
-        --     CreateWaterStrip(surface,
-        --                     {x=spawn.pos.x+WATER_SPAWN_OFFSET_X, y=spawn.pos.y+WATER_SPAWN_OFFSET_Y},
-        --                     WATER_SPAWN_LENGTH)
-        --     CreateWaterStrip(surface,
-        --                     {x=spawn.pos.x+WATER_SPAWN_OFFSET_X, y=spawn.pos.y+WATER_SPAWN_OFFSET_Y+1},
-        --                     WATER_SPAWN_LENGTH)
-        --     GenerateStartingResources(surface, spawn.pos)
-        -- end
-    end
-end
-
---------------------------------------------------------------------------------
--- Surface Generation Functions
---------------------------------------------------------------------------------
-
--- RSO_MODE = 1
--- VANILLA_MODE = 2
-
--- function CreateGameSurface(dww)
---     local mapSettings =  game.surfaces["nauvis"].map_gen_settings
-
---     if CMD_LINE_MAP_GEN then
---         mapSettings.terrain_segmentation = global.clMapGen.terrain_segmentation
---         mapSettings.water = global.clMapGen.water
---         mapSettings.starting_area = global.clMapGen.starting_area
---         mapSettings.peaceful_mode = global.clMapGen.peaceful_mode
---         mapSettings.seed = global.clMapGen.seed
---         mapSettings.height = global.clMapGen.height
---         mapSettings.width = global.clMapGen.width
---         mapSettings.autoplace_controls = global.clMapGen.autoplace_controls
---         mapSettings.cliff_settings = global.clMapGen.cliff_settings
---         mapSettings.property_expression_names = global.clMapGen.property_expression_names
---     end
-
---     -- To use RSO resources, we have to disable vanilla ore generation
---     if (mode == RSO_MODE) then
---         mapSettings.autoplace_controls["coal"].size="none"
---         mapSettings.autoplace_controls["copper-ore"].size="none"
---         mapSettings.autoplace_controls["iron-ore"].size="none"
---         mapSettings.autoplace_controls["stone"].size="none"
---         mapSettings.autoplace_controls["uranium-ore"].size="none"
---         mapSettings.autoplace_controls["crude-oil"].size="none"
---         mapSettings.autoplace_controls["enemy-base"].size="none"
---     end
-
---     local surface = game.create_surface(GAME_SURFACE_NAME,mapSettings)
---     surface.set_tiles({{name = "out-of-map",position = {1,1}}})
--- end
-
 
 --------------------------------------------------------------------------------
 -- Holding pen for new players joining the map
@@ -1138,15 +951,15 @@ function PlayerSpawnItems(event)
 end
 
 -- Autofill softmod
--- function Autofill(event)
---     local player = game.players[event.player_index]
---     local eventEntity = event.created_entity
+function Autofill(event)
+    local player = game.players[event.player_index]
+    local eventEntity = event.created_entity
 
---     if (eventEntity.name == "gun-turret") then
---         AutofillTurret(player, eventEntity)
---     end
+    if (eventEntity.name == "gun-turret") then
+        AutofillTurret(player, eventEntity)
+    end
 
---     if ((eventEntity.name == "car") or (eventEntity.name == "tank") or (eventEntity.name == "locomotive")) then
---         AutoFillVehicle(player, eventEntity)
---     end
--- end
+    if ((eventEntity.name == "car") or (eventEntity.name == "tank") or (eventEntity.name == "locomotive")) then
+        AutoFillVehicle(player, eventEntity)
+    end
+end
