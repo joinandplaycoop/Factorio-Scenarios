@@ -82,6 +82,9 @@ ENABLE_REGROWTH = false
 -- This can also be used without enabling regrowth.
 ENABLE_ABANDONED_BASE_REMOVAL = true
 
+-- Enable the new 0.17 research queue by default.
+ENABLE_RESEARCH_QUEUE = true
+
 --------------------------------------------------------------------------------
 -- Spawn Options
 --------------------------------------------------------------------------------
@@ -159,12 +162,12 @@ WATER_SPAWN_OFFSET_Y = -38
 WATER_SPAWN_LENGTH = 8
 
 -- Start resource amounts (per tile/oil spot)
-START_IRON_AMOUNT = 2000
+START_IRON_AMOUNT = 1500
 START_COPPER_AMOUNT = 1500
-START_STONE_AMOUNT = 1500
+START_STONE_AMOUNT = 1000
 START_COAL_AMOUNT = 1500
 START_URANIUM_AMOUNT = 1000
-START_OIL_AMOUNT = 600000
+START_OIL_AMOUNT = 300000
 
 -- Start resource shape
 -- If this is true, it will be a circle
@@ -220,20 +223,20 @@ SPAWN_TREE_OCTAGON_ENABLED = true
 
 -- Safe area has no aliens
 -- +/- this in x and y direction
-SAFE_AREA_TILE_DIST = CHUNK_SIZE*15
+SAFE_AREA_TILE_DIST = CHUNK_SIZE*5
 
 -- Warning area has significantly reduced aliens
 -- +/- this in x and y direction
-WARNING_AREA_TILE_DIST = CHUNK_SIZE*30
+WARNING_AREA_TILE_DIST = CHUNK_SIZE*10
 
 -- 1 : X (spawners alive : spawners destroyed) in this area
-WARN_AREA_REDUCTION_RATIO = 60
+WARN_AREA_REDUCTION_RATIO = 20
 
 -- Danger area has slightly reduce aliens
-REDUCED_DANGER_AREA_TILE_DIST = CHUNK_SIZE*90
+REDUCED_DANGER_AREA_TILE_DIST = CHUNK_SIZE*30
 
 -- 1 : X (spawners alive : spawners destroyed) in this area
-REDUCED_DANGER_AREA_REDUCTION_RATIO = 15
+REDUCED_DANGER_AREA_REDUCTION_RATIO = 5
 
 ---------------------------------------
 -- Other Forces/Teams Options
@@ -342,12 +345,12 @@ CMD_LINE_GEN = true
 ENEMY_EXPANSION = true
 
 -- Divide the alien evolution factors by this number to reduce it (or multiply if < 1)
-ENEMY_TIME_FACTOR_DISABLE = false -- Set this to true to disable time based evolution completely.
+ENEMY_TIME_FACTOR_DISABLE = true -- Set this to true to disable time based evolution completely.
 ENEMY_TIME_FACTOR_DIVISOR = 10
 ENEMY_POLLUTION_FACTOR_DISABLE = false -- Set this to true to disable pollution based evolution completely.
 ENEMY_POLLUTION_FACTOR_DIVISOR = 10
 ENEMY_DESTROY_FACTOR_DISABLE = false -- Set this to true to disable spawner destruction based evolution completely.
-ENEMY_DESTROY_FACTOR_DIVISOR = 1
+ENEMY_DESTROY_FACTOR_DIVISOR = 2
 
 -- Adjust biter type spawning based on distance to spawns.
 OARC_MODIFIED_ENEMY_SPAWNING = true
