@@ -14,8 +14,8 @@ require("config")
 -- When a new player is created, present the spawn options
 -- Assign them to the main force so they can communicate with the team
 -- without shouting.
-function SeparateSpawnsPlayerCreated(event)
-    local player = game.players[event.player_index]
+function SeparateSpawnsPlayerCreated(player_index)
+    local player = game.players[player_index]
     player.force = MAIN_FORCE
     DisplayWelcomeTextGui(player)
 end
@@ -48,12 +48,9 @@ end
 
 
 -- Call this if a player leaves the game
--- Still seems to have a bug.
 function FindUnusedSpawns(event)
     local player = game.players[event.player_index]
     if (player.online_time < MIN_ONLINE_TIME) then
-
-        DropGravestoneChests(player)
 
         -- Clear out global variables for that player
         if (global.playerSpawns[player.name] ~= nil) then
@@ -179,10 +176,10 @@ function SetupAndClearSpawnAreas(surface, chunkArea, spawnPointTable)
             RemoveInCircle(surface, chunkArea, "cliff", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
             -- RemoveDecorationsArea(surface, chunkArea)
 
-            if (SPAWN_TREE_CIRCLE_ENABLED) then
+            if (OARC_CFG.gen_settings.tree_circle) then
                 CreateCropCircle(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
             end
-            if (SPAWN_TREE_OCTAGON_ENABLED) then
+            if (OARC_CFG.gen_settings.tree_octagon) then
                 CreateCropOctagon(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
             end
             if (SPAWN_MOAT_CHOICE_ENABLED) then
@@ -239,43 +236,54 @@ end
 
 -- Generate the basic starter resource around a given location.
 function GenerateStartingResources(surface, pos)
-    local stonePos = {x=pos.x+START_RESOURCE_STONE_POS_X,
-                  y=pos.y+START_RESOURCE_STONE_POS_Y}
-    local coalPos = {x=pos.x+START_RESOURCE_COAL_POS_X,
-                  y=pos.y+START_RESOURCE_COAL_POS_Y}
-    local copperOrePos = {x=pos.x+START_RESOURCE_COPPER_POS_X,
-                  y=pos.y+START_RESOURCE_COPPER_POS_Y}
-    local ironOrePos = {x=pos.x+START_RESOURCE_IRON_POS_X,
-                  y=pos.y+START_RESOURCE_IRON_POS_Y}
-    local uraniumOrePos = {x=pos.x+START_RESOURCE_URANIUM_POS_X,
-                  y=pos.y+START_RESOURCE_URANIUM_POS_Y}
 
-    -- Tree generation is taken care of in chunk generation
+    local rand_settings = OARC_CFG.resource_rand_pos_settings
 
-    -- Generate oil patches
-    oil_patch_x=pos.x+START_RESOURCE_OIL_POS_X
-    oil_patch_y=pos.y+START_RESOURCE_OIL_POS_Y
-    for i=1,START_RESOURCE_OIL_NUM_PATCHES do
-        surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
-                    position={oil_patch_x, oil_patch_y}})
-        oil_patch_x=oil_patch_x+START_RESOURCE_OIL_X_OFFSET
-        oil_patch_y=oil_patch_y+START_RESOURCE_OIL_Y_OFFSET
+    -- Generate all resource tile patches
+    if (not rand_settings.enabled) then
+        for t_name,t_data in pairs (OARC_CFG.resource_tiles) do
+            local pos = {x=pos.x+t_data.x_offset, y=pos.y+t_data.y_offset}
+            GenerateResourcePatch(surface, t_name, t_data.size, pos, t_data.amount)
+        end
+    else
+
+        -- Create list of resource tiles
+        local r_list = {}
+        for k,_ in pairs(OARC_CFG.resource_tiles) do
+            table.insert(r_list, k)
+        end
+        local shuffled_list = FYShuffle(r_list)
+
+        -- This places resources in a semi-circle
+        -- Tweak in config.lua
+        local angle_offset = rand_settings.angle_offset
+        local num_resources = TableLength(OARC_CFG.resource_tiles)
+        local theta = ((rand_settings.angle_final - rand_settings.angle_offset) / num_resources);
+        local count = 0
+
+        for _,k_name in pairs (shuffled_list) do
+            local angle = (theta * count) + angle_offset;
+
+            local tx = (rand_settings.radius * math.cos(angle)) + pos.x
+            local ty = (rand_settings.radius * math.sin(angle)) + pos.y
+
+            local pos = {x=math.floor(tx), y=math.floor(ty)}
+            GenerateResourcePatch(surface, k_name, OARC_CFG.resource_tiles[k_name].size, pos, OARC_CFG.resource_tiles[k_name].amount)
+            count = count+1
+        end
     end
 
-    -- Generate Stone
-    GenerateResourcePatch(surface, "stone", START_RESOURCE_STONE_SIZE, stonePos, START_STONE_AMOUNT)
-
-    -- Generate Coal
-    GenerateResourcePatch(surface, "coal", START_RESOURCE_COAL_SIZE, coalPos, START_COAL_AMOUNT)
-
-    -- Generate Copper
-    GenerateResourcePatch(surface, "copper-ore", START_RESOURCE_COPPER_SIZE, copperOrePos, START_COPPER_AMOUNT)
-
-    -- Generate Iron
-    GenerateResourcePatch(surface, "iron-ore", START_RESOURCE_IRON_SIZE, ironOrePos, START_IRON_AMOUNT)
-
-    -- Generate Uranium
-    GenerateResourcePatch(surface, "uranium-ore", START_RESOURCE_URANIUM_SIZE, uraniumOrePos, START_URANIUM_AMOUNT)
+    -- Generate special resource patches (oil)
+    for p_name,p_data in pairs (OARC_CFG.resource_patches) do
+        local oil_patch_x=pos.x+p_data.x_offset_start
+        local oil_patch_y=pos.y+p_data.y_offset_start
+        for i=1,p_data.num_patches do
+            surface.create_entity({name=p_name, amount=p_data.amount,
+                        position={oil_patch_x, oil_patch_y}})
+            oil_patch_x=oil_patch_x+p_data.x_offset_next
+            oil_patch_y=oil_patch_y+p_data.y_offset_next
+        end
+    end
 end
 
 -- Add a spawn to the shared spawn global
@@ -486,12 +494,13 @@ function SendPlayerToNewSpawnAndCreateIt(playerName, spawn, moatEnabled)
     ClearNearbyEnemies(spawn, SAFE_AREA_TILE_DIST, game.surfaces[GAME_SURFACE_NAME])
 
     -- Create the spawn resources here
+    local water_data = OARC_CFG.water
     CreateWaterStrip(game.surfaces[GAME_SURFACE_NAME],
-                    {x=spawn.x+WATER_SPAWN_OFFSET_X, y=spawn.y+WATER_SPAWN_OFFSET_Y},
-                    WATER_SPAWN_LENGTH)
+                    {x=spawn.x+water_data.x_offset, y=spawn.y+water_data.y_offset},
+                    water_data.length)
     CreateWaterStrip(game.surfaces[GAME_SURFACE_NAME],
-                    {x=spawn.x+WATER_SPAWN_OFFSET_X, y=spawn.y+WATER_SPAWN_OFFSET_Y+1},
-                    WATER_SPAWN_LENGTH)
+                    {x=spawn.x+water_data.x_offset, y=spawn.y+water_data.y_offset+1},
+                    water_data.length)
     GenerateStartingResources(game.surfaces[GAME_SURFACE_NAME], spawn)
 
     -- Send the player to that position

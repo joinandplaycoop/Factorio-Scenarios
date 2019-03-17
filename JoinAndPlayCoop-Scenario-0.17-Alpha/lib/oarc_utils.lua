@@ -87,6 +87,18 @@ function TableLength(T)
   return count
 end
 
+-- Fisher-Yares shuffle
+-- https://stackoverflow.com/questions/35572435/how-do-you-do-the-fisher-yates-shuffle-in-lua
+function FYShuffle(tInput)
+    local tReturn = {}
+    for i = #tInput, 1, -1 do
+        local j = math.random(i)
+        tInput[i], tInput[j] = tInput[j], tInput[i]
+        table.insert(tReturn, tInput[i])
+    end
+    return tReturn
+end
+
 -- Simple function to get distance between two positions.
 function getDistance(posA, posB)
     -- Get the length for each of the components x and y
@@ -507,53 +519,6 @@ function RemoveWormsInArea(surface, area, small, medium, big, behemoth)
     end
 end
 
--- Adjust alien params
--- I'll probably remove this if --map-settings works with command line launches.
-function ConfigureAlienStartingParams()
-    if ENEMY_TIME_FACTOR_DISABLE then
-        game.map_settings.enemy_evolution.time_factor = 0
-    else
-        game.map_settings.enemy_evolution.time_factor=game.map_settings.enemy_evolution.time_factor / ENEMY_TIME_FACTOR_DIVISOR
-    end
-
-    if ENEMY_POLLUTION_FACTOR_DISABLE then
-        game.map_settings.enemy_evolution.pollution_factor = 0
-    else
-        game.map_settings.enemy_evolution.pollution_factor = game.map_settings.enemy_evolution.pollution_factor / ENEMY_POLLUTION_FACTOR_DIVISOR
-    end
-
-    if ENEMY_DESTROY_FACTOR_DISABLE then
-        game.map_settings.enemy_evolution.destroy_factor = 0
-    else
-        game.map_settings.enemy_evolution.destroy_factor = game.map_settings.enemy_evolution.destroy_factor / ENEMY_DESTROY_FACTOR_DIVISOR
-    end
-    
-    game.map_settings.enemy_expansion.enabled = ENEMY_EXPANSION
-
-    -- This is my own extra tweaks, still pretty experimental.
-    if (OARC_DIFFICULTY_CUSTOM) then
-        -- More diffusion / larger area.
-        game.map_settings.pollution.diffusion_ratio = 0.06 
-
-        -- Biters expand further.
-        game.map_settings.enemy_expansion.max_expansion_distance = 20 
-
-        -- Small biter groups.
-        game.map_settings.enemy_expansion.settler_group_min_size = 2 
-        game.map_settings.enemy_expansion.settler_group_max_size = 10
-
-        -- Longer cooldown / slower expansion.
-        game.map_settings.enemy_expansion.min_expansion_cooldown = TICKS_PER_MINUTE*15
-        game.map_settings.enemy_expansion.max_expansion_cooldown = TICKS_PER_MINUTE*60
-
-        -- Smaller groups, more frequent?
-        game.map_settings.unit_group.min_group_gathering_time = TICKS_PER_MINUTE
-        game.map_settings.unit_group.max_group_gathering_time = 4 * TICKS_PER_MINUTE
-        game.map_settings.unit_group.max_wait_time_for_late_members = 1 * TICKS_PER_MINUTE
-        game.map_settings.unit_group.max_unit_group_size = 15
-    end
-end
-
 -- Add Long Reach to Character
 function GivePlayerLongReach(player)
     player.character.character_build_distance_bonus = BUILD_DIST_BONUS
@@ -621,35 +586,38 @@ function DropGravestoneChests(player)
         defines.inventory.player_trash} do
         
         local inv = player.get_inventory(id)
-        
-        if ((#inv > 0) and not inv.is_empty()) then
-            for j = 1, #inv do
-                if inv[j].valid_for_read then
-                    
-                    -- Create a chest when counter is reset
-                    if (count == 0) then
-                        grave = DropEmptySteelChest(player)
-                        if (grave == nil) then
-                            -- player.print("Not able to place a chest nearby! Some items lost!")
-                            return
+
+        -- No idea how inv can be nil sometimes...?        
+        if (inv ~= nil) then
+            if ((#inv > 0) and not inv.is_empty()) then
+                for j = 1, #inv do
+                    if inv[j].valid_for_read then
+                        
+                        -- Create a chest when counter is reset
+                        if (count == 0) then
+                            grave = DropEmptySteelChest(player)
+                            if (grave == nil) then
+                                -- player.print("Not able to place a chest nearby! Some items lost!")
+                                return
+                            end
+                            grave_inv = grave.get_inventory(defines.inventory.chest)
                         end
-                        grave_inv = grave.get_inventory(defines.inventory.chest)
-                    end
-                    count = count + 1
+                        count = count + 1
 
-                    -- Copy the item stack into a chest slot.
-                    grave_inv[count].set_stack(inv[j])
+                        -- Copy the item stack into a chest slot.
+                        grave_inv[count].set_stack(inv[j])
 
-                    -- Reset counter when chest is full
-                    if (count == #grave_inv) then
-                        count = 0
+                        -- Reset counter when chest is full
+                        if (count == #grave_inv) then
+                            count = 0
+                        end
                     end
                 end
             end
-        end
 
-        -- Clear the player inventory so we don't have duplicate items lying around.
-        inv.clear()
+            -- Clear the player inventory so we don't have duplicate items lying around.
+            inv.clear()
+        end
     end
 
     if (grave ~= nil) then
@@ -753,7 +721,7 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius)
 
             -- Fill in all unexpected water in a circle
             if (distVar < tileRadSqr) then
-                if (surface.get_tile(i,j).collides_with("water-tile") or ENABLE_SPAWN_FORCE_GRASS) then
+                if (surface.get_tile(i,j).collides_with("water-tile") or OARC_CFG.gen_settings.force_grass) then
                     table.insert(dirtTiles, {name = "grass-1", position ={i,j}})
                 end
             end
@@ -784,7 +752,7 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius)
 
             -- Fill in all unexpected water in a circle
             if (distVar < tileRadius+2) then
-                if (surface.get_tile(i,j).collides_with("water-tile") or ENABLE_SPAWN_FORCE_GRASS) then
+                if (surface.get_tile(i,j).collides_with("water-tile") or OARC_CFG.gen_settings.force_grass) then
                     table.insert(dirtTiles, {name = "grass-1", position ={i,j}})
                 end
             end
@@ -845,9 +813,9 @@ function GenerateResourcePatch(surface, resourceName, diameter, pos, amount)
     if (diameter == 0) then
         return
     end
-    for y=0, diameter do
-        for x=0, diameter do
-            if (not ENABLE_RESOURCE_SHAPE_CIRCLE or ((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2)) then
+    for y=-midPoint, midPoint do
+        for x=-midPoint, midPoint do
+            if (not OARC_CFG.gen_settings.resources_circle_shape or ((x)^2 + (y)^2 < midPoint^2)) then
                 surface.create_entity({name=resourceName, amount=amount,
                     position={pos.x+x, pos.y+y}})
             end

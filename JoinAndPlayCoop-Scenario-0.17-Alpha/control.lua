@@ -57,11 +57,6 @@ GAME_SURFACE_NAME="nauvis"
 ----------------------------------------
 script.on_init(function(event)
 
-    -- Configures the map settings for enemies
-    -- This controls evolution growth factors and enemy expansion settings.
-    -- The only reason this is here is because --map-settings doesn't seem to work
-    -- with --start-server-load-scenario
-    ConfigureAlienStartingParams()
 
     if ENABLE_SEPARATE_SPAWNS then
         InitSpawnGlobalsAndForces()
@@ -189,7 +184,7 @@ script.on_event(defines.events.on_player_created, function(event)
     if not ENABLE_SEPARATE_SPAWNS then
         PlayerSpawnItems(event)
     else
-        SeparateSpawnsPlayerCreated(event)
+        SeparateSpawnsPlayerCreated(event.player_index)
     end
 end)
 
