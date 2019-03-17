@@ -353,7 +353,7 @@ ENABLE_SHARED_TEAM_CHAT = true
 ---------------------------------------
 -- Special Action Cooldowns
 ---------------------------------------
-RESPAWN_COOLDOWN_IN_MINUTES = 15
+RESPAWN_COOLDOWN_IN_MINUTES = 5
 RESPAWN_COOLDOWN_TICKS = TICKS_PER_MINUTE * RESPAWN_COOLDOWN_IN_MINUTES
 
 -- Require playes to be online for at least X minutes
@@ -370,7 +370,7 @@ MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 ENABLE_ANTI_GRIEFING = true
 
 -- Makes blueprint ghosts dissapear if they have been placed longer than this
-GHOST_TIME_TO_LIVE = 15 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
+GHOST_TIME_TO_LIVE = 60 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
 
 --------------------------------------------------------------------------------
 -- Frontier Rocket Silo Options
