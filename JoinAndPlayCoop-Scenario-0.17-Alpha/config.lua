@@ -211,28 +211,28 @@ OARC_CFG = {
     {
         ["iron-ore"] = 
         {
-            amount = 1500,
+            amount = 2000,
             size = 16,
             x_offset = -29,
             y_offset = 16
         },
         ["copper-ore"] = 
         {
-            amount = 1500,
+            amount = 2000,
             size = 14,
             x_offset = -28,
             y_offset = -3
         },
         ["stone"] = 
         {
-            amount = 1000,
+            amount = 2000,
             size = 12,
             x_offset = -27,
             y_offset = -34
         },
         ["coal"] = 
         {
-            amount = 1500,
+            amount = 2000,
             size = 12,
             x_offset = -27,
             y_offset = -20
