@@ -17,9 +17,9 @@ GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an 
 MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill, Undecorator, Player List"
 
 -- This stuff is shown in the welcome GUI. Make sure it's valid.
-WELCOME_MSG_TITLE = "Join and play Coop !!! RAILWORLD "
+WELCOME_MSG_TITLE = "Join and play Coop ! "
 SERVER_MSG = "Rules: Be polite. Ask before changing other players's stuff. Every hour permissions are applied\n"..
-"Here you can join the discord : poli.fun/discord Here you can look at the status of the server factorio-status.poli.fun"
+"Here you can join the discord : discord.joinandplaycoop.com Here you can look at the status of the server status.joinandplaycoop.com"
 
 SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
 "0.17 experimental release. Tweaks to fix spawn issues / text / difficulty.\n"..
@@ -29,7 +29,7 @@ SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
 
 SPAWN_WARN_MSG = "Due to the way this scenario works, it may take some time for the land around your new spawn area to generate... Please wait for 10-20 seconds when you select your first spawn."
 
-CONTACT_MSG = "Contact: admin@poli.fun (thanks to Oarc for the scenario) poli.fun/discord"
+CONTACT_MSG = "Contact: admin@poli.fun (thanks to Oarc for the scenario) discord.joinandplaycoop.com"
 
 -- This should be false for you, it's just a convenience for me.
 SERVER_OWNER_IS_OARC = false
