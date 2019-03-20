@@ -75,7 +75,7 @@ ENABLE_SHARED_TEAM_VISION = true
 
 -- Enable map regrowth, see regrowth_map.lua for more info.
 -- I'm not a fan of this anymore, but it helps keep the map size down
-ENABLE_REGROWTH = true
+ENABLE_REGROWTH = false
 
 -- If you have regrowth enabled, this should also be enabled.
 -- It removes bases for players that join and leave the game quickly.
@@ -305,24 +305,19 @@ OARC_CFG = {
 
 -- Safe area has no aliens
 -- +/- this in x and y direction
-
-SAFE_AREA_TILE_DIST = CHUNK_SIZE*20
+SAFE_AREA_TILE_DIST = CHUNK_SIZE*30
 
 -- Warning area has significantly reduced aliens
 -- +/- this in x and y direction
-
 WARNING_AREA_TILE_DIST = CHUNK_SIZE*40
 
 -- 1 : X (spawners alive : spawners destroyed) in this area
-
 WARN_AREA_REDUCTION_RATIO = 80
 
 -- Danger area has slightly reduce aliens
-
 REDUCED_DANGER_AREA_TILE_DIST = CHUNK_SIZE*120
 
 -- 1 : X (spawners alive : spawners destroyed) in this area
-
 REDUCED_DANGER_AREA_REDUCTION_RATIO = 20
 
 ---------------------------------------
