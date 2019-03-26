@@ -6,6 +6,10 @@ Download the zip.
 
 Place it in your Factorio/scenarios/... folder
 
+It should look something like this (for my windows steam install location):
+
+C:\Users\user\AppData\Roaming\Factorio\scenarios\jvmguyScenario\control.lua
+
 
 ## Configuration
 
@@ -18,6 +22,7 @@ Not all configurations have been fully tested so modify at your own risk.
 Much needed.
 
 ## Credit
+Very little of this is my own creation. It's my spin on a scenario created by Oarc.
 See https://github.com/Oarcinae/FactorioScenarioMultiplayerSpawn
 
 
