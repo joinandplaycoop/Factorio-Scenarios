@@ -19,6 +19,7 @@
 
 -- Generic Utility Includes
 require("lib/oarc_utils")
+require("config")
 
 
 -- Default timeout of generated chunks
@@ -97,7 +98,7 @@ end
 function OarcRegrowthCheckChunkEmpty(event)
     if ((event.entity.force ~= nil) and (event.entity.force ~= "neutral") and (event.entity.force ~= "enemy")) then
         if CheckChunkEmpty(event.entity.position) then
-            DebugPrint("Resetting chunk timer."..event.entity.position.x.." "..event.entity.position.y)
+            log("Resetting chunk timer."..event.entity.position.x.." "..event.entity.position.y)
             OarcRegrowthForceRefreshChunk(event.entity.position, 0)
         end
     end
@@ -248,7 +249,7 @@ function OarcRegrowthCheckArray()
         -- Increment Y
         if (global.chunk_regrow.y_index > global.chunk_regrow.max_y) then
             global.chunk_regrow.y_index = global.chunk_regrow.min_y
-            DebugPrint("Finished checking regrowth array."..global.chunk_regrow.min_x.." "..global.chunk_regrow.max_x.." "..global.chunk_regrow.min_y.." "..global.chunk_regrow.max_y)
+            log("Finished checking regrowth array."..global.chunk_regrow.min_x.." "..global.chunk_regrow.max_x.." "..global.chunk_regrow.min_y.." "..global.chunk_regrow.max_y)
         else
             global.chunk_regrow.y_index = global.chunk_regrow.y_index + 1
         end
@@ -295,7 +296,7 @@ function OarcRegrowthRemoveAllChunks()
             end
         else
 
-            -- DebugPrint("Chunk no longer expired?")
+            -- log("Chunk no longer expired?")
         end
     end
 end
@@ -321,7 +322,11 @@ function OarcRegrowthOnTick()
     -- Send a broadcast warning before it happens.
     if ((game.tick % REGROWTH_CLEANING_INTERVAL_TICKS) == REGROWTH_CLEANING_INTERVAL_TICKS-601) then
         if (#global.chunk_regrow.removal_list > 100) then
-            SendBroadcastMsg("Map cleanup in 10 seconds, if you don't want to lose what you found drop a powered radar on it!")
+            if (ENABLE_REGROWTH) then
+                SendBroadcastMsg("Map cleanup in 10 seconds, if you don't want to lose what you found drop a powered radar on it!")
+            else
+                SendBroadcastMsg("Map cleanup in 10 seconds. Cleaning up an abadoned base!")
+            end
         end
     end
 
@@ -340,10 +345,19 @@ end
 function OarcRegrowthForceRemovalOnTick()
     -- Catch force remove flag
     if (game.tick == global.chunk_regrow.force_removal_flag+60) then
-        SendBroadcastMsg("Map cleanup in 10 seconds, if you don't want to lose what you found drop a powered radar on it!")
+        if (ENABLE_REGROWTH) then
+            SendBroadcastMsg("Map cleanup in 10 seconds, if you don't want to lose what you found drop a powered radar on it!")
+        else
+            SendBroadcastMsg("Map cleanup in 10 seconds. Cleaning up an abadoned base!")
+        end
     end
     if (game.tick == global.chunk_regrow.force_removal_flag+660) then
         OarcRegrowthRemoveAllChunks()
-        SendBroadcastMsg("Map cleanup done, sorry for your loss.")
+        
+        if (ENABLE_REGROWTH) then
+            SendBroadcastMsg("Map cleanup done, sorry for your loss.")
+        else
+            SendBroadcastMsg("Abandoned base cleanup complete.")
+        end
     end
 end

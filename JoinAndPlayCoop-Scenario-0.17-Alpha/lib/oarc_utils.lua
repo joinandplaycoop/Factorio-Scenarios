@@ -263,7 +263,7 @@ function GetRandomVector()
         randVec.x = math.random(-3,3)
         randVec.y = math.random(-3,3)
     end
-    DebugPrint("direction: x=" .. randVec.x .. ", y=" .. randVec.y)
+    log("direction: x=" .. randVec.x .. ", y=" .. randVec.y)
     return randVec
 end
 
@@ -329,7 +329,7 @@ function FindMapEdge(directionVec, surface)
         end
     end
 
-    -- DebugPrint("spawn: x=" .. position.x .. ", y=" .. position.y)
+    -- log("spawn: x=" .. position.x .. ", y=" .. position.y)
     return position
 end
 
@@ -354,7 +354,7 @@ function FindUngeneratedCoordinates(minDistChunks, maxDistChunks, surface)
         -- Enforce a max number of tries
         tryCounter = tryCounter + 1
         if (tryCounter > maxTries) then
-            DebugPrint("FindUngeneratedCoordinates - Max Tries Hit!")
+            log("FindUngeneratedCoordinates - Max Tries Hit!")
             break
  
         -- Check that the distance is within the min,max specified
@@ -369,7 +369,7 @@ function FindUngeneratedCoordinates(minDistChunks, maxDistChunks, surface)
         end       
     end
 
-    DebugPrint("spawn: x=" .. position.x .. ", y=" .. position.y)
+    log("spawn: x=" .. position.x .. ", y=" .. position.y)
     return position
 end
 
@@ -401,6 +401,11 @@ function GetAreaAroundPos(pos, dist)
                      y=pos.y+dist}}
 end
 
+-- Gets chunk position of a tile.
+function GetChunkPosFromTilePos(tile_pos)
+    return {x=math.floor(tile_pos.x/32), y=math.floor(tile_pos.y/32)}
+end
+
 -- Removes the entity type from the area given
 function RemoveInArea(surface, area, type)
     for key, entity in pairs(surface.find_entities_filtered({area=area, type= type})) do
@@ -421,6 +426,29 @@ function RemoveInCircle(surface, area, type, pos, dist)
         end
     end
 end
+
+-- Create another surface so that we can modify map settings and not have a screwy nauvis map.
+function CreateGameSurface()
+    
+    -- Get starting surface settings.
+    local nauvis_settings =  game.surfaces["nauvis"].map_gen_settings
+
+    if ENABLE_VANILLA_SPAWNS then
+        nauvis_settings.starting_points = CreateVanillaSpawns(VANILLA_SPAWN_COUNT, VANILLA_SPAWN_SPACING)
+        -- DeleteAllChunksExceptCenter(game.surfaces[GAME_SURFACE_NAME])
+
+        -- ISLAND MAP GEN -- WARNING
+        -- nauvis_settings.property_expression_names.elevation = "0_17-island"
+        -- ISLAND MAP GEN -- WARNING
+    end
+
+    -- Create new game surface
+    game.create_surface(GAME_SURFACE_NAME, nauvis_settings)
+end
+
+--------------------------------------------------------------------------------
+-- Functions for removing/modifying enemies
+--------------------------------------------------------------------------------
 
 -- Convenient way to remove aliens, just provide an area
 function RemoveAliensInArea(surface, area)
@@ -515,7 +543,7 @@ function RemoveWormsInArea(surface, area, small, medium, big, behemoth)
                 entity.destroy()
         end
     else
-        DebugPrint("RemoveWormsInArea had empty worm_types list!")
+        log("RemoveWormsInArea had empty worm_types list!")
     end
 end
 

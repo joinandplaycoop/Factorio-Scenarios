@@ -45,6 +45,13 @@ SERVER_OWNER_IS_OARC = false
 -- This is the core of the mod. Probably not a good idea to disable it.
 ENABLE_SEPARATE_SPAWNS = true
 
+-- Enable this to have a vanilla style starting spawn.
+-- This changes the experience pretty drastically.
+-- If you enable this, you will NOT get the option to spawn using the "pre-fab"
+-- fixed layout spawns. This is because the spawn types just don't balance well with
+-- each other.
+ENABLE_VANILLA_SPAWNS = false
+
 -- This allows 2 players to spawn next to each other in the wilderness,
 -- each with their own starting point. It adds more GUI selection options.
 ENABLE_BUDDY_SPAWN = true
@@ -74,7 +81,8 @@ PLAYER_LIST_OFFLINE_PLAYERS = true -- List offline players as well.
 ENABLE_SHARED_TEAM_VISION = true
 
 -- Enable map regrowth, see regrowth_map.lua for more info.
--- I'm not a fan of this anymore, but it helps keep the map size down
+-- Eseentially clears up map area that was explored but not used every hour.
+-- Helps reduce save file size.
 ENABLE_REGROWTH = false
 
 -- If you have regrowth enabled, this should also be enabled.
@@ -82,7 +90,7 @@ ENABLE_REGROWTH = false
 -- This can also be used without enabling regrowth.
 ENABLE_ABANDONED_BASE_REMOVAL = true
 
--- Enable the new 0.17 research queue by default.
+-- Enable the new 0.17 research queue by default for all forces.
 ENABLE_RESEARCH_QUEUE = true
 
 --------------------------------------------------------------------------------
@@ -100,6 +108,7 @@ ENABLE_RESEARCH_QUEUE = true
 -- Adjust enemy spawning based on distance to spawns. All it does it make things
 -- more balanced based on your distance and makes the game a little easier.
 -- No behemoth worms everywhere just because you spawned far away.
+-- If you're trying out the vanilla spawning, you might want to disable this.
 OARC_MODIFIED_ENEMY_SPAWNING = true
 
 --------------------------------------------------------------------------------
@@ -153,7 +162,18 @@ NEAR_MAX_DIST = 50
 -- Far Distance in chunks
 FAR_MIN_DIST = 200
 FAR_MAX_DIST = 300
-          
+
+---------------------------------------
+-- Vanilla spawn point options
+-- (only applicable if ENABLE_VANILLA_SPAWNS is enabled.)
+---------------------------------------
+
+-- Num total spawns pre-assigned (minimum number)
+VANILLA_SPAWN_COUNT = 100
+
+-- Num tiles between each spawn. (I recommend at least 1000)
+VANILLA_SPAWN_SPACING = 2000
+
 ---------------------------------------
 -- Resource & Spawn Circle Options
 ---------------------------------------
@@ -357,17 +377,6 @@ MIN_ONLINE_TIME_IN_MINUTES = 15
 MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 
 --------------------------------------------------------------------------------
--- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)
--- These things were added from other people's requests/changes.
--- It is very very basic only, nothing fancy.
---------------------------------------------------------------------------------
--- Enable this to disable some basic things like friendly fire, deconstructing from map view, etc.
-ENABLE_ANTI_GRIEFING = true
-
--- Makes blueprint ghosts dissapear if they have been placed longer than this
-GHOST_TIME_TO_LIVE = 60 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
-
---------------------------------------------------------------------------------
 -- Frontier Rocket Silo Options
 --------------------------------------------------------------------------------
 
@@ -388,7 +397,7 @@ SILO_POSITION = {x = 0, y = 100}
 -- Set this to false so that you have to search for the silo's.
 ENABLE_SILO_VISION = true
 
--- Add beacons around the silo (Philip's modm)
+-- Add beacons around the silo (Philip's mod)
 ENABLE_SILO_BEACONS = false
 ENABLE_SILO_RADAR = false
 
@@ -413,14 +422,14 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 ENABLE_ANTI_GRIEFING = true
 
 -- Makes blueprint ghosts dissapear if they have been placed longer than this
-GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
+GHOST_TIME_TO_LIVE = 120 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
 
 -------------------------------------------------------------------------------
 -- DEBUG / Custom stuff
 --------------------------------------------------------------------------------
 
 -- DEBUG prints for me in game.
-global.oarcDebugEnabled = true
+global.oarcDebugEnabled = false
 
 -- These are my specific welcome messages that get used only if I am the user
 -- that creates the game.
