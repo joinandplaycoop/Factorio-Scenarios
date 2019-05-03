@@ -60,7 +60,7 @@ ENABLE_TAGS = true
 ENABLE_LONGREACH = true
 
 -- Enable Autofill
-ENABLE_AUTOFILL = true
+ENABLE_AUTOFILL = false
 
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
@@ -395,7 +395,7 @@ RESOURCE_DIST_BONUS = 6
 --------------------------------------------------------------------------------
 -- Autofill Options
 --------------------------------------------------------------------------------
-AUTOFILL_TURRET_AMMO_QUANTITY = 10
+AUTOFILL_TURRET_AMMO_QUANTITY = 0
 
 --------------------------------------------------------------------------------
 -- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)

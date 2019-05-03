@@ -705,44 +705,6 @@ function TransferItemMultipleTypes(srcInv, destEntity, itemNameArray, itemCount)
     return ret -- Return the last error code
 end
 
--- Autofills a turret with ammo
-function AutofillTurret(player, turret)
-    local mainInv = player.get_inventory(defines.inventory.player_main)
-
-    -- Attempt to transfer some ammo
-    local ret = TransferItemMultipleTypes(mainInv, turret, {"uranium-rounds-magazine", "piercing-rounds-magazine", "firearm-magazine"}, AUTOFILL_TURRET_AMMO_QUANTITY)
-
-    -- Check the result and print the right text to inform the user what happened.
-    if (ret > 0) then
-        -- Inserted ammo successfully
-        -- FlyingText("Inserted ammo x" .. ret, turret.position, my_color_red, player.surface)
-    elseif (ret == -1) then
-        FlyingText("Out of ammo!", turret.position, my_color_red, player.surface) 
-    elseif (ret == -2) then
-        FlyingText("Autofill ERROR! - Report this bug!", turret.position, my_color_red, player.surface)
-    end
-end
-
--- Autofills a vehicle with fuel, bullets and shells where applicable
-function AutoFillVehicle(player, vehicle)
-    local mainInv = player.get_inventory(defines.inventory.player_main)
-
-    -- Attempt to transfer some fuel
-    if ((vehicle.name == "car") or (vehicle.name == "tank") or (vehicle.name == "locomotive")) then
-        TransferItemMultipleTypes(mainInv, vehicle, {"nuclear-fuel", "rocket-fuel", "solid-fuel", "coal", "wood"}, 50)
-    end
-
-    -- Attempt to transfer some ammo
-    if ((vehicle.name == "car") or (vehicle.name == "tank")) then
-        TransferItemMultipleTypes(mainInv, vehicle, {"uranium-rounds-magazine", "piercing-rounds-magazine", "firearm-magazine"}, 100)
-    end
-
-    -- Attempt to transfer some tank shells
-    if (vehicle.name == "tank") then
-        TransferItemMultipleTypes(mainInv, vehicle, {"explosive-uranium-cannon-shell", "uranium-cannon-shell", "explosive-cannon-shell", "cannon-shell"}, 100)
-    end
-end
-
 --------------------------------------------------------------------------------
 -- Resource patch and starting area generation
 --------------------------------------------------------------------------------
@@ -943,16 +905,3 @@ function PlayerSpawnItems(event)
     GivePlayerStarterItems(game.players[event.player_index])
 end
 
--- Autofill softmod
-function Autofill(event)
-    local player = game.players[event.player_index]
-    local eventEntity = event.created_entity
-
-    if (eventEntity.name == "gun-turret") then
-        AutofillTurret(player, eventEntity)
-    end
-
-    if ((eventEntity.name == "car") or (eventEntity.name == "tank") or (eventEntity.name == "locomotive")) then
-        AutoFillVehicle(player, eventEntity)
-    end
-end

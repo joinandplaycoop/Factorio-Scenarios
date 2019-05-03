@@ -197,9 +197,6 @@ script.on_event(defines.events.on_player_left_game, function(event)
 end)
 
 script.on_event(defines.events.on_built_entity, function(event)
-    if global.ocfg.enable_autofill then
-        Autofill(event)
-    end
 
     if global.ocfg.enable_regrowth then
         OarcRegrowthOffLimits(event.created_entity.position, 2)
