@@ -33,6 +33,7 @@ function InitOarcConfig()
         global.ocfg.enable_vanilla_spawns = ENABLE_VANILLA_SPAWNS
         global.ocfg.enable_buddy_spawn = ENABLE_BUDDY_SPAWN
         global.ocfg.frontier_rocket_silo = FRONTIER_ROCKET_SILO_MODE
+        global.ocfg.silo_islands = SILO_ISLANDS_MODE
         global.ocfg.enable_undecorator = ENABLE_UNDECORATOR
         global.ocfg.enable_tags = ENABLE_TAGS
         global.ocfg.enable_long_reach = ENABLE_LONGREACH
@@ -61,6 +62,8 @@ function InitOarcConfig()
         global.ocfg.respawn_cooldown_min = RESPAWN_COOLDOWN_IN_MINUTES
         global.ocfg.frontier_silo_count = SILO_NUM_SPAWNS
         global.ocfg.frontier_silo_distance = SILO_CHUNK_DISTANCE
+        global.ocfg.frontier_fixed_pos = SILO_FIXED_POSITION
+        global.ocfg.frontier_pos_table = SILO_POSITION
         global.ocfg.frontier_silo_vision = ENABLE_SILO_VISION
     
     -- MOD VERSION
@@ -181,6 +184,22 @@ function InitOarcConfig()
         global.ocfg.respawn_cooldown_min = settings.global["oarc-respawn-cooldown-min"].value
         global.ocfg.frontier_silo_count = settings.global["oarc-frontier-silo-count"].value
         global.ocfg.frontier_silo_distance = settings.global["oarc-frontier-silo-distance"].value
+        global.ocfg.frontier_fixed_pos = false
+        global.ocfg.frontier_pos_table = {x = 0, y = 100}
         global.ocfg.frontier_silo_vision = settings.global["oarc-frontier-silo-vision"].value
     end
+
+
+    -----------------------
+    -- VALIDATION CHECKS --
+    -----------------------
+
+    if (not global.ocfg.frontier_rocket_silo or not global.ocfg.enable_vanilla_spawns) then
+        global.ocfg.silo_islands = false
+    end
+
+    if (global.ocfg.enable_vanilla_spawns) then
+        global.ocfg.enable_buddy_spawn = false
+    end
+
 end

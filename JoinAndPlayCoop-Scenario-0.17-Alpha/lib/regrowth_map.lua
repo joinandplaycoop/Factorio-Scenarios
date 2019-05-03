@@ -152,29 +152,21 @@ function OarcRegrowthMarkForRemoval(pos, chunk_radius)
     end
 end
 
--- Marks a chunk a position that won't ever be deleted.
-function OarcRegrowthOffLimitsChunk(pos)
-    local c_pos = GetChunkCoordsFromPos(pos)
-
-    if (global.chunk_regrow.map[c_pos.x] == nil) then
-        global.chunk_regrow.map[c_pos.y] = {}
+-- Marks a chunk containing a position that won't ever be deleted.
+function OarcRegrowthOffLimitsChunkPos(pos)
+    if (global.chunk_regrow.map[pos.x] == nil) then
+        global.chunk_regrow.map[pos.x] = {}
     end
-    global.chunk_regrow.map[c_pos.x][c_pos.y] = -1
+    global.chunk_regrow.map[pos.x][pos.y] = -1
 end
-
 
 -- Marks a safe area around a position that won't ever be deleted.
 function OarcRegrowthOffLimits(pos, chunk_radius)
     local c_pos = GetChunkCoordsFromPos(pos)
-    for i=-chunk_radius,chunk_radius do
-        for k=-chunk_radius,chunk_radius do
-            local x = c_pos.x+i
-            local y = c_pos.y+k
 
-            if (global.chunk_regrow.map[x] == nil) then
-                global.chunk_regrow.map[x] = {}
-            end
-            global.chunk_regrow.map[x][y] = -1
+    for i=-chunk_radius,chunk_radius do
+        for j=-chunk_radius,chunk_radius do
+            OarcRegrowthOffLimitsChunkPos({x=c_pos.x+i,y=c_pos.y+j})
         end
     end
 end
@@ -184,7 +176,7 @@ function OarcRegrowthRefreshChunk(pos, bonus_time)
     local c_pos = GetChunkCoordsFromPos(pos)
 
     if (global.chunk_regrow.map[c_pos.x] == nil) then
-        global.chunk_regrow.map[c_pos.y] = {}
+        global.chunk_regrow.map[c_pos.x] = {}
     end
     if (global.chunk_regrow.map[c_pos.x][c_pos.y] ~= -1) then
         global.chunk_regrow.map[c_pos.x][c_pos.y] = game.tick + bonus_time
@@ -197,7 +189,7 @@ function OarcRegrowthForceRefreshChunk(pos, bonus_time)
     local c_pos = GetChunkCoordsFromPos(pos)
 
     if (global.chunk_regrow.map[c_pos.x] == nil) then
-        global.chunk_regrow.map[c_pos.y] = {}
+        global.chunk_regrow.map[c_pos.x] = {}
     end
     global.chunk_regrow.map[c_pos.x][c_pos.y] = game.tick + bonus_time
 end
