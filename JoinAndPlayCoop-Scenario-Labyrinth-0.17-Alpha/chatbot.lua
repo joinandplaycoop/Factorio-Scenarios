@@ -2,8 +2,8 @@ local event = require 'utils.event'
 local message_color = {r = 0.5, g = 0.3, b = 1}
 
 local brain = {
-	[1] = {"Our Discord server is at https://getcomfy.eu/discord"},
-	[2] = {"Need an admin? Type @Mods in game chat to notify moderators,", "or put a message in the discord help channel."}
+	[1] = {"Our Discord server is at https://discord.joinandplaycoop.com"},
+	[2] = {"Need an admin? Type @Admin in game chat to notify admins,", "or put a message in the discord help channel."}
 }
 
 local links = {
@@ -23,7 +23,7 @@ local links = {
 
 local function on_player_created(event)
 	local player = game.players[event.player_index]
-	player.print("Join the comfy discord >> getcomfy.eu/discord", message_color)
+	player.print("Join the JAPC discord >> https://discord.joinandplaycoop.com", message_color)
 end
 
 local function process_custom_commands(event)	
