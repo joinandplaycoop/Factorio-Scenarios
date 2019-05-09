@@ -138,8 +138,8 @@ end
 function GiveQuickStartPowerArmor(player)
     player.insert{name="power-armor", count = 1}
 
-    if player and player.get_inventory(5) ~= nil and player.get_inventory(5)[1] ~= nil then
-        local p_armor = player.get_inventory(5)[1].grid --defines.inventory.player_armor = 5?
+    if player and player.get_inventory(defines.inventory.character_armor) ~= nil and player.get_inventory(defines.inventory.character_armor)[1] ~= nil then
+        local p_armor = player.get_inventory(defines.inventory.character_armor)[1].grid
             if p_armor ~= nil then
                   p_armor.put({name = "fusion-reactor-equipment"})
                   p_armor.put({name = "exoskeleton-equipment"})
@@ -618,13 +618,12 @@ function DropGravestoneChests(player)
     -- Put it all into a chest.
     -- If the chest is full, create a new chest.
     for i, id in ipairs{
-        defines.inventory.player_armor,
-        defines.inventory.player_main,
-        defines.inventory.player_quickbar,
-        defines.inventory.player_guns,
-        defines.inventory.player_ammo,
-        defines.inventory.player_tools,
-        defines.inventory.player_trash} do
+        defines.inventory.character_armor,
+        defines.inventory.character_main,
+        defines.inventory.character_guns,
+        defines.inventory.character_ammo,
+        defines.inventory.character_vehicle,
+        defines.inventory.character_trash} do
         
         local inv = player.get_inventory(id)
 
@@ -666,6 +665,53 @@ function DropGravestoneChests(player)
     end
 end
 
+-- Dump player items into a chest after the body expires.
+function DropGravestoneChestFromCorpse(corpse)
+    if ((corpse == nil) or (corpse.character_corpse_player_index == nil)) then return end
+
+    local grave, grave_inv
+    local count = 0
+
+    local inv = corpse.get_inventory(defines.inventory.character_corpse)
+
+    -- No idea how inv can be nil sometimes...?        
+    if (inv ~= nil) then
+        if ((#inv > 0) and not inv.is_empty()) then
+            for j = 1, #inv do
+                if inv[j].valid_for_read then
+                    
+                    -- Create a chest when counter is reset
+                    if (count == 0) then
+                        grave = DropEmptySteelChest(corpse)
+                        if (grave == nil) then
+                            -- player.print("Not able to place a chest nearby! Some items lost!")
+                            return
+                        end
+                        grave_inv = grave.get_inventory(defines.inventory.chest)
+                    end
+                    count = count + 1
+
+                    -- Copy the item stack into a chest slot.
+                    grave_inv[count].set_stack(inv[j])
+
+                    -- Reset counter when chest is full
+                    if (count == #grave_inv) then
+                        count = 0
+                    end
+                end
+            end
+        end
+
+        -- Clear the player inventory so we don't have duplicate items lying around.
+        -- inv.clear()
+    end
+
+    if (grave ~= nil) and (game.players[corpse.character_corpse_player_index] ~= nil)then
+        game.players[corpse.character_corpse_player_index].print("Your corpse got eaten by biters! They kindly dropped your items into a chest! Go get them quick!")
+    end
+
+end
+
 --------------------------------------------------------------------------------
 -- Item/Inventory stuff (used in autofill)
 --------------------------------------------------------------------------------
@@ -703,6 +749,44 @@ function TransferItemMultipleTypes(srcInv, destEntity, itemNameArray, itemCount)
         end
     end
     return ret -- Return the last error code
+end
+
+-- Autofills a turret with ammo
+function AutofillTurret(player, turret)
+    local mainInv = player.get_inventory(defines.inventory.character_main)
+
+    -- Attempt to transfer some ammo
+    local ret = TransferItemMultipleTypes(mainInv, turret, {"uranium-rounds-magazine", "piercing-rounds-magazine", "firearm-magazine"}, AUTOFILL_TURRET_AMMO_QUANTITY)
+
+    -- Check the result and print the right text to inform the user what happened.
+    if (ret > 0) then
+        -- Inserted ammo successfully
+        -- FlyingText("Inserted ammo x" .. ret, turret.position, my_color_red, player.surface)
+    elseif (ret == -1) then
+        FlyingText("Out of ammo!", turret.position, my_color_red, player.surface) 
+    elseif (ret == -2) then
+        FlyingText("Autofill ERROR! - Report this bug!", turret.position, my_color_red, player.surface)
+    end
+end
+
+-- Autofills a vehicle with fuel, bullets and shells where applicable
+function AutoFillVehicle(player, vehicle)
+    local mainInv = player.get_inventory(defines.inventory.character_main)
+
+    -- Attempt to transfer some fuel
+    if ((vehicle.name == "car") or (vehicle.name == "tank") or (vehicle.name == "locomotive")) then
+        TransferItemMultipleTypes(mainInv, vehicle, {"nuclear-fuel", "rocket-fuel", "solid-fuel", "coal", "wood"}, 50)
+    end
+
+    -- Attempt to transfer some ammo
+    if ((vehicle.name == "car") or (vehicle.name == "tank")) then
+        TransferItemMultipleTypes(mainInv, vehicle, {"uranium-rounds-magazine", "piercing-rounds-magazine", "firearm-magazine"}, 100)
+    end
+
+    -- Attempt to transfer some tank shells
+    if (vehicle.name == "tank") then
+        TransferItemMultipleTypes(mainInv, vehicle, {"explosive-uranium-cannon-shell", "uranium-cannon-shell", "explosive-cannon-shell", "cannon-shell"}, 100)
+    end
 end
 
 --------------------------------------------------------------------------------
@@ -905,3 +989,16 @@ function PlayerSpawnItems(event)
     GivePlayerStarterItems(game.players[event.player_index])
 end
 
+-- Autofill softmod
+function Autofill(event)
+    local player = game.players[event.player_index]
+    local eventEntity = event.created_entity
+
+    if (eventEntity.name == "gun-turret") then
+        AutofillTurret(player, eventEntity)
+    end
+
+    if ((eventEntity.name == "car") or (eventEntity.name == "tank") or (eventEntity.name == "locomotive")) then
+        AutoFillVehicle(player, eventEntity)
+    end
+end

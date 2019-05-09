@@ -197,6 +197,9 @@ script.on_event(defines.events.on_player_left_game, function(event)
 end)
 
 script.on_event(defines.events.on_built_entity, function(event)
+    if global.ocfg.enable_autofill then
+        Autofill(event)
+    end
 
     if global.ocfg.enable_regrowth then
         OarcRegrowthOffLimits(event.created_entity.position, 2)
@@ -296,6 +299,15 @@ script.on_event(defines.events.on_entity_spawned, function(event)
     if (global.ocfg.modified_enemy_spawning) then
         ModifyEnemySpawnsNearPlayerStartingAreas(event)
     end
+end)
+
+
+----------------------------------------
+-- On Corpse Timed Out
+-- Save player's stuff so they don't lose it if they can't get to the corpse fast enough.
+----------------------------------------
+script.on_event(defines.events.on_character_corpse_expired, function(event)
+    DropGravestoneChestFromCorpse(event.corpse)
 end)
 
 -- on_biter_base_built -- Worth considering for later.
