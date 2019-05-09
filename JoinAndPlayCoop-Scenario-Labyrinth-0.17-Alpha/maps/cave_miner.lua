@@ -1,12 +1,11 @@
 -- Cave Miner -- mewmew made this --
---Use /c spaghetti() to play without bots.
 
 require "modules.rocks_broken_paint_tiles"
 require "maps.cave_miner_kaboomsticks"
 require "modules.satellite_score"
 --require "modules.explosive_biters"
 require "modules.spawners_contain_biters"
-require "modules.teleporting_worms"
+--require "modules.teleporting_worms"
 --require "modules.splice_double"
 --require "modules.biters_double_damage"
 
@@ -196,7 +195,7 @@ local function create_cave_miner_stats_gui(player)
 	separators[2] = t.add { type = "label", caption = "|"}
 	
 	captions[3] = t.add { type = "label", caption = "Efficiency" }
-	local x = math.ceil(game.forces.player.manual_mining_speed_modifier * 100 + player_hunger_buff[global.player_hunger[player.name]] * 100, 0)
+	local x = math.floor(game.forces.player.manual_mining_speed_modifier * 100 + player_hunger_buff[global.player_hunger[player.name]] * 100)
 	local str = ""
 	if x > 0 then str = str .. "+" end
 	str = str .. tostring(x)
@@ -797,6 +796,8 @@ end
 
 local function hunger_update(player, food_value)
 	
+	if not player.character then return end
+	
 	if food_value == -1 and player.character.driving == true then return end
 	
 	local past_hunger = global.player_hunger[player.name]	
@@ -838,7 +839,7 @@ local function on_player_joined_game(event)
 	local surface = game.surfaces[1]	
 	local player = game.players[event.player_index]
 	if not global.cave_miner_init_done then		 
-		local p = surface.find_non_colliding_position("player", {0,-40}, 10, 1)
+		local p = surface.find_non_colliding_position("character", {0,-40}, 10, 1)
 		game.forces["player"].set_spawn_position(p,surface)
 		player.teleport(p)
 		surface.daytime = 0.5
@@ -892,7 +893,7 @@ Darkness is a hazard in the mines, stay near your lamps..
 		
 		global.biter_spawn_schedule = {}										
 		
-		global.ore_spill_cap = 35
+		global.ore_spill_cap = 60
 		global.stats_rocks_broken = 0
 		global.stats_ores_found = 0
 		global.total_ores_mined = 0
@@ -911,17 +912,17 @@ Darkness is a hazard in the mines, stay near your lamps..
 
 		global.darkness_threat_level = {}							
 		
-		global.cave_miner_init_done = true						
+		game.forces.player.chart(surface, {{-160, -160}, {160, 160}})
+		
+		global.cave_miner_init_done = true
 	end
 	if player.online_time < 10 then
 		create_cave_miner_info(player)
 		global.player_hunger[player.name] = player_hunger_spawn_value
 		hunger_update(player, 0)
 		global.darkness_threat_level[player.name] = 0
-		player.insert {name = 'pistol', count = 1}
-		--player.insert {name = 'raw-fish', count = 1}		
-		player.insert {name = 'firearm-magazine', count = 16}			
-		--player.insert {name = 'iron-axe', count = 1}		
+		player.insert {name = 'pistol', count = 1}	
+		player.insert {name = 'firearm-magazine', count = 16}
 	end
 	create_cave_miner_button(player)
 	create_cave_miner_stats_gui(player)
@@ -1181,7 +1182,7 @@ local function pre_player_mined_item(event)
 		if math_random(1,3) == 1 then hunger_update(player, -1) end
 		
 		surface.spill_item_stack(player.position,{name = "raw-fish", count = math_random(3,4)},true)
-		local bonus_amount = math.ceil((tile_distance_to_center - math.sqrt(spawn_dome_size)) * 0.10, 0) 
+		local bonus_amount = math.floor((tile_distance_to_center - math.sqrt(spawn_dome_size)) * 0.10, 0) 
 		if bonus_amount < 1 then bonus_amount = 0 end		
 		local amount = math_random(45,55) + bonus_amount
 		if amount > 200 then amount = 200 end
@@ -1194,7 +1195,13 @@ local function pre_player_mined_item(event)
 		
 		local mined_loot = global.rock_mining_raffle_table[math_random(1,#global.rock_mining_raffle_table)]
 		
-		surface.create_entity({name = "flying-text", position = rock_position, text = amount .. " " .. ore_floaty_texts[mined_loot][1], color = ore_floaty_texts[mined_loot][2]})
+		surface.create_entity({
+			name = "flying-text",
+			position = rock_position,
+			text = "+" .. amount .. " [img=item/" .. mined_loot .. "]",
+			color = {r=0.98, g=0.66, b=0.22}
+		})
+		--surface.create_entity({name = "flying-text", position = rock_position, text = amount .. " " .. ore_floaty_texts[mined_loot][1], color = ore_floaty_texts[mined_loot][2]})
 		
 		if amount > global.ore_spill_cap then
 			surface.spill_item_stack(rock_position,{name = mined_loot, count = global.ore_spill_cap},true)

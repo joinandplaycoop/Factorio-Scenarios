@@ -122,7 +122,6 @@ local function init_forces()
 	global.spectator_rejoin_delay = {}
 	global.spy_fish_timeout = {}
 	global.force_area = {}
-	global.bb_total_food = {}
 	global.bb_evolution = {}
 	global.bb_evasion = {}
 	global.bb_threat_income = {}
@@ -138,13 +137,11 @@ local function init_forces()
 		game.forces[force.name].set_ammo_damage_modifier("shotgun-shell", 1)
 		game.forces[force.name].research_queue_enabled = true
 		global.spy_fish_timeout[force.name] = 0
-		global.bb_total_food[force.name] = 0
 		global.bb_evolution[force.name] = 0
-		global.bb_evasion[force.name] = 0
+		global.bb_evasion[force.name] = false
 		global.bb_threat_income[force.name] = 0
 		global.bb_threat[force.name] = 0	
 	end
-
 	global.game_lobby_active = true
 end
 
@@ -156,7 +153,7 @@ local function on_player_joined_game(event)
 	
 	if player.online_time == 0 then
 		if surface.is_chunk_generated({0,0}) then
-			player.teleport(surface.find_non_colliding_position("player", {0,0}, 3, 0.5), surface)
+			player.teleport(surface.find_non_colliding_position("character", {0,0}, 3, 0.5), surface)
 		else
 			player.teleport({0,0}, surface)
 		end

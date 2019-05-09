@@ -2,7 +2,7 @@ local event = require 'utils.event'
 
 local function teleport_player(surface, source_player, position)		
 	local materializing_characters = source_player.surface.find_entities_filtered({
-		name = "player",
+		name = "character",
 		area = {{position.x - 1, position.y - 1},{position.x + 1, position.y + 1}},
 		force = "neutral"
 	})	
@@ -57,7 +57,7 @@ end
 
 local function teleport(source_player, target_player)
 	source_player.teleport({x = math.floor(source_player.position.x), y = math.floor(source_player.position.y)})
-	local target_position = target_player.surface.find_non_colliding_position("player", target_player.position, 128, 1)
+	local target_position = target_player.surface.find_non_colliding_position("character", target_player.position, 128, 1)
 	if not target_position then target_position = {x = target_player.position.x, y = target_player.position.y} end
 	local materializing_character = target_player.surface.create_entity({name = "player", position = target_position, force = "neutral", direction = source_player.character.direction})
 	materializing_character.destructible = false

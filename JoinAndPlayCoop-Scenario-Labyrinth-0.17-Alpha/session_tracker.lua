@@ -7,7 +7,18 @@
 local Event = require 'utils.event' 
 local play_sessions = require 'session_data'
 
+function write_player_totals_file()
+	local filename = "totals.lua"
+	game.remove_path(filename)
+	game.write_file(filename, "local playsession = {\n" , true)
+	for player_name, data in pairs(global.player_totals) do
+		game.write_file(filename, '\t{"' .. player_name .. '", {' .. data[1] .. '}},\n' , true)
+	end
+	game.write_file(filename, "}\nreturn playsession" , true)	
+end
+
 function write_session_file()
+	if #game.connected_players == 0 then return end
 	if global.file_name_found then
 		game.remove_path(global.file_name)
 		game.write_file(global.file_name, "local playsession = {\n" , true)

@@ -100,7 +100,7 @@ local function get_rank(player)
 	
 	--52 ranks
 	
-	local time_needed = 120 -- in minutes between rank upgrades
+	local time_needed = 240 -- in minutes between rank upgrades
 	m = m / time_needed
 	m = math.floor(m)
 	m = m + 1
@@ -420,7 +420,7 @@ local function on_player_joined_game(event)
 	if not global.player_list_pokes_counter then global.player_list_pokes_counter = {} end	
 	
 	if player.gui.top.player_list_button == nil then
-		local button = player.gui.top.add({ type = "sprite-button", name = "player_list_button", sprite = "item/heavy-armor", tooltip = "Player List" })		
+		local button = player.gui.top.add({ type = "sprite-button", name = "player_list_button", sprite = "item/heavy-armor", tooltip = "Player List" })
 		button.style.minimal_height = 38
 		button.style.minimal_width = 38
 		button.style.top_padding = 2

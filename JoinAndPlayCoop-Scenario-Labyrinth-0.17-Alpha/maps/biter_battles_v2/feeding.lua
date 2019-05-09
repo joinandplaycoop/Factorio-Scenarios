@@ -1,11 +1,11 @@
 local food_values = {
 	["automation-science-pack"] =	{value = 0.001, name = "automation science"},
-	["logistic-science-pack"] =			{value = 0.00292, name = "logistic science"},
-	["military-science-pack"] =			{value = 0.01225, name = "military science"},
-	["chemical-science-pack"] = 		{value = 0.02392, name = "chemical science"},
-	["production-science-pack"] =	{value = 0.080, name = "production science"},
-	["utility-science-pack"] =			{value = 0.13875, name = "utility science"},
-	["space-science-pack"] = 			{value = 0.420, name = "space science"},
+	["logistic-science-pack"] =			{value = 0.0025, name = "logistic science"},
+	["military-science-pack"] =			{value = 0.0096, name = "military science"},
+	["chemical-science-pack"] = 		{value = 0.0264, name = "chemical science"},
+	["production-science-pack"] =	{value = 0.08874, name = "production science"},
+	["utility-science-pack"] =			{value = 0.09943, name = "utility science"},
+	["space-science-pack"] = 			{value = 0.28957, name = "space science"},
 }
 
 local force_translation = {
@@ -18,15 +18,30 @@ local enemy_team_of = {
 	["south"] = "north"
 }
 
-local function set_biter_endgame_damage(force_name, biter_force)
-	if biter_force.evolution_factor ~= 1 then return end
-	local m = (math.ceil(global.bb_evolution[force_name] * 100) / 100) - 1
-	m = m * 3
-	biter_force.set_ammo_damage_modifier("melee", m)
-	biter_force.set_ammo_damage_modifier("biological", m)
-	biter_force.set_ammo_damage_modifier("artillery-shell", m)
-	biter_force.set_ammo_damage_modifier("flamethrower", m)
-	biter_force.set_ammo_damage_modifier("laser-turret", m)
+local minimum_modifier = 50
+local maximum_modifier = 250
+local player_amount_for_maximum_threat_gain = 20
+
+function get_instant_threat_player_count_modifier()
+	local current_player_count = #game.forces.north.connected_players + #game.forces.south.connected_players
+	local gain_per_player = (maximum_modifier - minimum_modifier) / player_amount_for_maximum_threat_gain
+	local m = minimum_modifier + gain_per_player * current_player_count
+	if m > maximum_modifier then m = maximum_modifier end
+	return m
+end
+
+local function set_biter_endgame_modifiers(force)
+	if force.evolution_factor ~= 1 then return end
+	local damage_mod = (global.bb_evolution[force.name] - 1) * 2
+	local evasion_mod = ((global.bb_evolution[force.name] - 1) * 2) + 1
+	
+	force.set_ammo_damage_modifier("melee", damage_mod)
+	force.set_ammo_damage_modifier("biological", damage_mod)
+	force.set_ammo_damage_modifier("artillery-shell", damage_mod)
+	force.set_ammo_damage_modifier("flamethrower", damage_mod)
+	force.set_ammo_damage_modifier("laser-turret", damage_mod)
+	
+	global.bb_evasion[force.name] = evasion_mod
 end
 
 local function feed_biters(player, food)	
@@ -54,10 +69,10 @@ local function feed_biters(player, food)
 		end				
 	end								
 	
-	--ADD TOTAL FOOD FEED
-	--global.bb_total_food[biter_force_name] = global.bb_total_food[biter_force_name] + (food_values[food].value * flask_amount)	
 	local decimals = 12
 	local math_round = math.round
+	
+	local instant_threat_player_count_modifier = get_instant_threat_player_count_modifier()
 	
 	for a = 1, flask_amount, 1 do				
 		--SET THREAT INCOME
@@ -68,7 +83,7 @@ local function feed_biters(player, food)
 		
 		---SET EVOLUTION
 		local e2 = (game.forces[biter_force_name].evolution_factor * 100) + 1
-		local diminishing_modifier = (1 / (10 ^ (e2 * 0.016))) / (e2 * 0.5)
+		local diminishing_modifier = (1 / (10 ^ (e2 * 0.017))) / (e2 * 0.5)
 		local evo_gain = (food_values[food].value * diminishing_modifier)
 		global.bb_evolution[biter_force_name] = global.bb_evolution[biter_force_name] + evo_gain
 		global.bb_evolution[biter_force_name] = math_round(global.bb_evolution[biter_force_name], decimals)
@@ -76,21 +91,15 @@ local function feed_biters(player, food)
 			game.forces[biter_force_name].evolution_factor = global.bb_evolution[biter_force_name]
 		else
 			game.forces[biter_force_name].evolution_factor = 1
-			
-			--SET EVASION
-			local e3 = global.bb_evasion[biter_force_name] + 1
-			local diminishing_modifier = 1 / (0.05 + (e3 * 0.0005))
-			global.bb_evasion[biter_force_name] = global.bb_evasion[biter_force_name] + 125 * evo_gain * diminishing_modifier
-			global.bb_evasion[biter_force_name] = math_round(global.bb_evasion[biter_force_name], decimals)
-			if global.bb_evasion[biter_force_name] > 950 then global.bb_evasion[biter_force_name] = 950 end
 		end
 						
 		--ADD INSTANT THREAT
 		local diminishing_modifier = 1 / (0.2 + (e2 * 0.018))
-		global.bb_threat[biter_force_name] = global.bb_threat[biter_force_name] + (food_values[food].value * 200 * diminishing_modifier)
+		global.bb_threat[biter_force_name] = global.bb_threat[biter_force_name] + (food_values[food].value * instant_threat_player_count_modifier * diminishing_modifier)
 		global.bb_threat[biter_force_name] = math_round(global.bb_threat[biter_force_name], decimals)
-	end	
-	set_biter_endgame_damage(biter_force_name, game.forces[biter_force_name])
+	end
+	
+	set_biter_endgame_modifiers(game.forces[biter_force_name])
 end
 
 return feed_biters

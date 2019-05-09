@@ -2,7 +2,7 @@ local event = require 'utils.event'
 local message_color = {r = 0.5, g = 0.3, b = 1}
 
 local brain = {
-	[1] = {"Our Discord server is at https://comfyplay.net/discord"},
+	[1] = {"Our Discord server is at https://getcomfy.eu/discord"},
 	[2] = {"Need an admin? Type @Mods in game chat to notify moderators,", "or put a message in the discord help channel."}
 }
 
@@ -23,7 +23,7 @@ local links = {
 
 local function on_player_created(event)
 	local player = game.players[event.player_index]
-	player.print("Join the comfy discord >> comfyplay.net/discord", message_color)
+	player.print("Join the comfy discord >> getcomfy.eu/discord", message_color)
 end
 
 local function process_custom_commands(event)	
@@ -33,8 +33,10 @@ local function process_custom_commands(event)
 		if word == "trust" or word == "regular" then
 			for word in string.gmatch(event.message, "%g+") do
 				if game.players[word] then
-					global.trusted_players[word] = true
-					game.print(word .. " is now a trusted player.", {r=0.22, g=0.99, b=0.99}) 					
+					if game.players[word].name == word then
+						global.trusted_players[word] = true
+						game.print(word .. " is now a trusted player.", {r=0.22, g=0.99, b=0.99})
+					end
 				end
 			end
 			return
@@ -42,8 +44,10 @@ local function process_custom_commands(event)
 		if word == "untrust" then
 			for word in string.gmatch(event.message, "%g+") do
 				if game.players[word] then
-					global.trusted_players[word] = false
-					game.print(word .. " is no longer a trusted player.", {r=0.22, g=0.99, b=0.99}) 					
+					if game.players[word].name == word then
+						global.trusted_players[word] = false
+						game.print(word .. " is no longer a trusted player.", {r=0.22, g=0.99, b=0.99})
+					end
 				end
 			end
 			return

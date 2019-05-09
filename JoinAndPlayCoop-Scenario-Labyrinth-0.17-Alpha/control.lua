@@ -36,23 +36,30 @@ require "modules.hunger_games"
 --require "modules.explosive_player_respawn"
 --require "modules.burden"
 --require "modules.team_teleport"
+--require "modules.surface_holes_and_elevators"
+--require "modules.dangerous_goods"
+--require "modules.biters_avoid_damage"
+--require "modules.show_health"
+--require "modules.autodecon_when_depleted"
+--require "modules.comfylatron"
 -----------------------------
 
 ---- enable maps here ----
 --require "maps.biter_battles_v2.biter_battles_v2"
 --require "maps.biter_battles.biter_battles"
 --require "maps.cave_miner"
---require "maps.labyrinth"
+require "maps.labyrinth"
 --require "maps.junkyard"
-require "maps.spooky_forest"
+--require "maps.spooky_forest"
 --require "maps.nightfall"
 --require "maps.lost"
+--require "maps.hedge_maze"
 --require "maps.rivers"
 --require "maps.atoll"
 --require "maps.choppy"
 --require "maps.tank_battles"
 --require "maps.spiral_troopers"
---require "maps.fish_defender"
+--require "maps.fish_defender.fish_defender"
 --require "maps.mountain_fortress"
 --require "maps.stoneblock"
 --require "maps.deep_jungle"
@@ -79,4 +86,9 @@ local function on_player_created(event)
 	player.gui.left.style = 'slot_table_spacing_vertical_flow'
 end
 
+local function on_init()
+	game.forces.player.research_queue_enabled = true
+end
+
+event.on_init(on_init)
 event.add(defines.events.on_player_created, on_player_created)

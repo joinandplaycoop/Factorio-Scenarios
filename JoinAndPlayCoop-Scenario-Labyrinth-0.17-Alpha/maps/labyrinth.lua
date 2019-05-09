@@ -2,7 +2,7 @@
 require "maps.labyrinth_map_intro"
 require "modules.teleporters"
 require "modules.satellite_score"
-require "modules.landfill_reveals_nauvis"
+--require "modules.landfill_reveals_nauvis"
 
 local map_functions = require "tools.map_functions"
 local simplex_noise = require 'utils.simplex_noise'.d2
@@ -923,7 +923,7 @@ local function on_player_joined_game(event)
 	end	
 	local surface = game.surfaces["labyrinth"]
 	if player.online_time < 5 and surface.is_chunk_generated({0,0}) then 
-		player.teleport(surface.find_non_colliding_position("player", {16, 0}, 2, 1), "labyrinth")
+		player.teleport(surface.find_non_colliding_position("character", {16, 0}, 2, 1), "labyrinth")
 	else
 		if player.online_time < 5 then
 			player.teleport({16, 0}, "labyrinth")

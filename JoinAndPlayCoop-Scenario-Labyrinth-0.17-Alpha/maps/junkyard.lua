@@ -268,7 +268,7 @@ local function place_random_scrap_entity(surface, position)
 	end
 	if r < 90 then
 		local e = surface.create_entity({name = "gun-turret", position = position, force = "scrap_defense"})
-		e.insert({name = "firearm-magazine", count = math.random(8, 128)})
+		e.insert({name = "piercing-rounds-magazine", count = math.random(8, 128)})
 		return
 	end
 		
@@ -277,18 +277,18 @@ local function place_random_scrap_entity(surface, position)
 	e.fluidbox[1] = {name = fluids[math.random(1, #fluids)], amount = math.random(15000, 25000)}
 	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(6,8), 1)
 	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(6,8), 1)
-	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(20,40), 80)	
+	create_entity_chain(surface, {name = "pipe", position = position, force = "player"}, math_random(15,30), 80)	
 end
 
 local function create_inner_content(surface, pos, noise)
 	if math_random(1, 90000) == 1 then secret_shop(pos, surface) return end
 	if math_random(1, 102400) == 1 then
 		if noise < 0.3 or noise > -0.3 then
-			map_functions.draw_derpy_entity_ring(surface, pos, "laser-turret", "scrap_defense", 0, 2)
-			map_functions.draw_derpy_entity_ring(surface, pos, "accumulator", "scrap_defense", 2, 3)
-			map_functions.draw_derpy_entity_ring(surface, pos, "substation", "scrap_defense", 3, 4)
-			map_functions.draw_derpy_entity_ring(surface, pos, "solar-panel", "scrap_defense", 4, 6)
-			map_functions.draw_derpy_entity_ring(surface, pos, "stone-wall", "scrap_defense", 6, 7)
+			map_functions.draw_noise_entity_ring(surface, pos, "laser-turret", "scrap_defense", 0, 2)
+			map_functions.draw_noise_entity_ring(surface, pos, "accumulator", "scrap_defense", 2, 3)
+			map_functions.draw_noise_entity_ring(surface, pos, "substation", "scrap_defense", 3, 4)
+			map_functions.draw_noise_entity_ring(surface, pos, "solar-panel", "scrap_defense", 4, 6)
+			map_functions.draw_noise_entity_ring(surface, pos, "stone-wall", "scrap_defense", 6, 7)
 			
 			create_tile_chain(surface, {name = "concrete", position = pos}, math_random(16, 32), 50)
 			create_tile_chain(surface, {name = "concrete", position = pos}, math_random(16, 32), 50)
