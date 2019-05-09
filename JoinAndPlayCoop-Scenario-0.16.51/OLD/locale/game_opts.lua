@@ -4,8 +4,7 @@
 
 -- Main Configuration File
 require("config")
-require("lib/oarc_utils")
-require("lib/separate_spawns")
+require("locale/oarc_utils")
 
 function CreateGameOptionsGui(event)
     local player = game.players[event.player_index]
@@ -25,9 +24,8 @@ local function ExpandGameOptionsGui(player)
                                             direction="vertical"}
 
         -- General Server Info:
-        AddLabel(frame, "info_1", global.ocfg.welcome_msg, my_longer_label_style)
-        AddLabel(frame, "info_2", global.ocfg.server_rules, my_longer_label_style)
-        AddLabel(frame, "info_3", global.ocfg.server_contact, my_longer_label_style)
+        AddLabel(frame, "info_1", global.welcome_msg, my_longer_label_style)
+        AddLabel(frame, "info_2", SERVER_MSG, my_longer_label_style)
         AddSpacer(frame, "info_spacer1")
 
         -- Enemy Settings:
@@ -46,49 +44,54 @@ local function ExpandGameOptionsGui(player)
 
         -- Game Mode:
         AddLabel(frame, "core_mod_en", "Core game mode (separate spawns) is enabled.", my_longer_label_style)
+        if (not ENABLE_SEPARATE_SPAWNS) then
+            frame.core_mod_en.caption="Core game mode (separate spawns) is DISABLED."
+            frame.core_mod_en.style.font_color=my_color_red
+        end
 
         -- Soft Mods:
         local soft_mods_string = "Oarc Core"
-        if (global.ocfg.enable_undecorator) then
+        if (not ENABLE_SEPARATE_SPAWNS) then
+            soft_mods_string = "Oarc Core [DISABLED!]"
+        end
+        if (ENABLE_RSO) then
+            soft_mods_string = soft_mods_string .. ", RSO"
+        end
+        if (ENABLE_UNDECORATOR) then
             soft_mods_string = soft_mods_string .. ", Undecorator"
         end
-        if (global.ocfg.enable_tags) then
+        if (ENABLE_TAGS) then
             soft_mods_string = soft_mods_string .. ", Tags"
         end
-        if (global.ocfg.enable_long_reach) then
+        if (ENABLE_LONGREACH) then
             soft_mods_string = soft_mods_string .. ", Long Reach"
         end
-        if (global.ocfg.enable_autofill) then
+        if (ENABLE_AUTOFILL) then
             soft_mods_string = soft_mods_string .. ", Auto Fill"
         end
-        if (global.ocfg.enable_player_list) then
+        if (ENABLE_PLAYER_LIST) then
             soft_mods_string = soft_mods_string .. ", Player List"
         end
 
         local game_info_str = "Soft Mods Enabled: " .. soft_mods_string
 
         -- Spawn options:
-        if (global.ocfg.enable_separate_teams) then
+        if (ENABLE_SEPARATE_TEAMS) then
             game_info_str = game_info_str.."\n".."You are allowed to spawn on your own team (have your own research tree). All teams are friendly!"
         end
-        if (global.ocfg.enable_vanilla_spawns) then
-            game_info_str = game_info_str.."\n".."You are spawned in a default style starting area."
-        else
-            game_info_str = game_info_str.."\n".."You are spawned with a fix set of starting resources."
-            if (global.ocfg.enable_buddy_spawn) then
-                game_info_str = game_info_str.."\n".."You can chose to spawn alongside a buddy if you spawn together at the same time."
-            end
+        if (ENABLE_BUDDY_SPAWN) then
+            game_info_str = game_info_str.."\n".."You can chose to spawn alongside a buddy if you spawn together at the same time."
         end
-        if (global.ocfg.enable_shared_spawns) then
+        if (ENABLE_SHARED_SPAWNS) then
             game_info_str = game_info_str.."\n".."Spawn hosts may choose to share their spawn and allow other players to join them."
         end
-        if (global.ocfg.enable_separate_teams and global.ocfg.enable_shared_team_vision) then
+        if (ENABLE_SEPARATE_TEAMS and ENABLE_SHARED_TEAM_VISION) then
             game_info_str = game_info_str.."\n".."Everyone (all teams) have shared vision."
         end
-        if (global.ocfg.frontier_rocket_silo) then
+        if (FRONTIER_ROCKET_SILO_MODE) then
             game_info_str = game_info_str.."\n".."Silos are NOT craftable. There is at least one already located on the map."
         end
-        if (global.ocfg.enable_regrowth) then
+        if (ENABLE_REGROWTH) then
             game_info_str = game_info_str.."\n".."Old parts of the map will slowly be deleted over time (chunks without any player buildings)."
         end
         if (ENABLE_POWER_ARMOR_QUICK_START) then
@@ -97,8 +100,8 @@ local function ExpandGameOptionsGui(player)
 
         AddLabel(frame, "game_info_label", game_info_str, my_longer_label_style)
 
-        if (global.ocfg.enable_abandoned_base_removal) then
-            AddLabel(frame, "leave_warning_msg", "If you leave within " .. global.ocfg.minimum_online_time .. " minutes of joining, your base and character will be deleted.", my_longer_label_style)
+        if (ENABLE_ABANDONED_BASE_REMOVAL) then
+            AddLabel(frame, "leave_warning_msg", "If you leave within " .. MIN_ONLINE_TIME_IN_MINUTES .. " minutes of joining, your base and character will be deleted.", my_longer_label_style)
             frame.leave_warning_msg.style.font_color=my_color_red
         end
 
@@ -115,10 +118,6 @@ local function ExpandGameOptionsGui(player)
                             type = "drop-down",
                             items = player_list}
             frame.add{name="ban_player", type="button", caption="Ban Player"}
-            frame.add{name="restart_player", type="button", caption="Restart Player"}
-            
-            -- AddLabel(frame, "restart_warning_msg", "You might CRASH the scenario by using Restart Player. Not 100% tested yet. Will not work if player has any center gui visible.", my_longer_label_style)
-            -- frame.restart_warning_msg.style.font_color=my_color_red
         end
     end
 end
@@ -133,25 +132,13 @@ function GameOptionsGuiClick(event)
     end
 
     if (name == "ban_player") then
-        local pIndex = event.element.parent.ban_players_dropdown.selected_index
+        banIndex = event.element.parent.ban_players_dropdown.selected_index
 
-        if (pIndex ~= 0) then
-            local banPlayer = event.element.parent.ban_players_dropdown.get_item(pIndex)
+        if (banIndex ~= 0) then
+            banPlayer = event.element.parent.ban_players_dropdown.get_item(banIndex)
             if (game.players[banPlayer]) then
-                game.ban_player(banPlayer, "Banned from admin panel.")
-                log("Banning " .. banPlayer)
-            end
-        end
-    end
-
-    if (name == "restart_player") then
-        local pIndex = event.element.parent.ban_players_dropdown.selected_index
-
-        if (pIndex ~= 0) then
-            local resetPlayer = event.element.parent.ban_players_dropdown.get_item(pIndex)
-            if (game.players[resetPlayer]) then
-                SeparateSpawnsPlayerCreated(resetPlayer)
-                log("Resetting " .. resetPlayer)
+                game.ban_player(banPlayer, "Banned for griefing - Banned from admin panel.")
+                DebugPrint("Banning " .. banPlayer)
             end
         end
     end

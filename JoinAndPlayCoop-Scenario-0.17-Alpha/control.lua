@@ -7,7 +7,6 @@
 -- From there, I ended up adding a bunch of other minor/major features
 -- 
 -- Credit:
---  RSO mod to RSO author - Orzelek - I contacted him via the forum
 --  Tags - Taken from WOGs scenario 
 --  Rocket Silo - Taken from Frontier as an idea
 --
@@ -18,8 +17,10 @@
 
 -- To keep the scenario more manageable (for myself) I have done the following:
 --      1. Keep all event calls in control.lua (here)
---      2. Put all config options in config.lua
+--      2. Put all config options in config.lua and provided an example-config.lua file too.
 --      3. Put other stuff into their own files where possible.
+--      4. Put all other files into lib folder
+--      5. Provided an examples folder for example/recommended map gen settings
 
 
 -- Generic Utility Includes
@@ -31,6 +32,7 @@ require("lib/tag")
 require("lib/game_opts")
 require("lib/regrowth_map")
 require("lib/player_list")
+require("lib/rocket_launch")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
@@ -39,6 +41,9 @@ require("lib/player_list")
 
 -- Main Configuration File
 require("config")
+
+-- Save all config settings to global table.
+require("lib/oarc_global_cfg.lua")
 
 -- Scenario Specific Includes
 require("lib/separate_spawns")
@@ -57,36 +62,31 @@ GAME_SURFACE_NAME="oarc"
 ----------------------------------------
 script.on_init(function(event)
 
+    -- FIRST
+    InitOarcConfig()
+
     -- Create new game surface
     CreateGameSurface()
 
     -- MUST be before other stuff, but after surface creation.
-    if ENABLE_SEPARATE_SPAWNS then
-        InitSpawnGlobalsAndForces()
-    end
+    InitSpawnGlobalsAndForces()
 
-    if SILO_FIXED_POSITION then
-        SetFixedSiloPosition(SILO_POSITION)
-    else
-        SetRandomSiloPosition(SILO_NUM_SPAWNS)
-    end
+    -- Regardless of whether it's enabled or not, it's good to have this init.
+    OarcRegrowthInit()
 
-    if FRONTIER_ROCKET_SILO_MODE then
-        GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
-    end
-
-    if ENABLE_REGROWTH or ENABLE_ABANDONED_BASE_REMOVAL then
-        OarcRegrowthInit()
+    -- Frontier Silo Area Generation
+    if (global.ocfg.frontier_rocket_silo) then
+        SpawnSilosAndGenerateSiloAreas()
     end
 end)
 
 
 ----------------------------------------
--- Freeplay rocket launch info
--- Slightly modified for my purposes
+-- Rocket launch event
+-- Used for end game win conditions / unlocking late game stuff
 ----------------------------------------
 script.on_event(defines.events.on_rocket_launched, function(event)
-    if FRONTIER_ROCKET_SILO_MODE then
+    if global.ocfg.frontier_rocket_silo then
         RocketLaunchEvent(event)
     end
 end)
@@ -98,25 +98,21 @@ local first_chunk_generated_flag = false
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
 
-    if ENABLE_REGROWTH then
+    if global.ocfg.enable_regrowth then
         OarcRegrowthChunkGenerate(event.area.left_top)
     end
 
-    if ENABLE_UNDECORATOR then
+    if global.ocfg.enable_undecorator then
         UndecorateOnChunkGenerate(event)
     end
 
-    if FRONTIER_ROCKET_SILO_MODE then
+    if global.ocfg.frontier_rocket_silo then
         GenerateRocketSiloChunk(event)
     end
 
-    if ENABLE_SEPARATE_SPAWNS and not USE_VANILLA_STARTING_SPAWN then
-        SeparateSpawnsGenerateChunk(event)
-    end
+    SeparateSpawnsGenerateChunk(event)
 
-    if not ENABLE_DEFAULT_SPAWN then
-        CreateHoldingPen(event.surface, event.area, 16, false)
-    end
+    CreateHoldingPen(event.surface, event.area, 16, 32)
 end)
 
 
@@ -124,34 +120,30 @@ end)
 -- Gui Click
 ----------------------------------------
 script.on_event(defines.events.on_gui_click, function(event)
-    if ENABLE_TAGS then
+    if global.ocfg.enable_tags then
         TagGuiClick(event)
     end
 
-    if ENABLE_PLAYER_LIST then
+    if global.ocfg.enable_player_list then
         PlayerListGuiClick(event)
     end
 
-    if ENABLE_SEPARATE_SPAWNS then
-        WelcomeTextGuiClick(event)
-        SpawnOptsGuiClick(event)
-        SpawnCtrlGuiClick(event)
-        SharedSpwnOptsGuiClick(event)
-        BuddySpawnOptsGuiClick(event)
-        BuddySpawnWaitMenuClick(event)
-        BuddySpawnRequestMenuClick(event)
-        SharedSpawnJoinWaitMenuClick(event)
-    end
+    WelcomeTextGuiClick(event)
+    SpawnOptsGuiClick(event)
+    SpawnCtrlGuiClick(event)
+    SharedSpwnOptsGuiClick(event)
+    BuddySpawnOptsGuiClick(event)
+    BuddySpawnWaitMenuClick(event)
+    BuddySpawnRequestMenuClick(event)
+    SharedSpawnJoinWaitMenuClick(event)
 
     GameOptionsGuiClick(event)
-
+    RocketGuiClick(event)
 end)
 
 script.on_event(defines.events.on_gui_checked_state_changed, function (event)
-    if ENABLE_SEPARATE_SPAWNS then
-        SpawnOptsRadioSelect(event)
-        SpawnCtrlGuiOptionsSelect(event)
-    end
+    SpawnOptsRadioSelect(event)
+    SpawnCtrlGuiOptionsSelect(event)
 end)
 
 
@@ -164,14 +156,17 @@ script.on_event(defines.events.on_player_joined_game, function(event)
 
     PlayerJoinedMessages(event)
 
-    if ENABLE_PLAYER_LIST then
+    if global.ocfg.enable_player_list then
         CreatePlayerListGui(event)
     end
 
-    if ENABLE_TAGS then
+    if global.ocfg.enable_tags then
         CreateTagGui(event)
     end
 
+    if global.satellite_sent then
+        CreateRocketGui(game.players[event.player_index])
+    end
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
@@ -180,42 +175,31 @@ script.on_event(defines.events.on_player_created, function(event)
     -- May change this to Lobby in the future.
     game.players[event.player_index].teleport({x=0,y=0}, GAME_SURFACE_NAME)
 
-    if ENABLE_LONGREACH then
+    if global.ocfg.enable_long_reach then
         GivePlayerLongReach(game.players[event.player_index])
     end
 
-    if not ENABLE_SEPARATE_SPAWNS then
-        PlayerSpawnItems(event)
-    else
-        SeparateSpawnsPlayerCreated(event.player_index)
-    end
+    SeparateSpawnsPlayerCreated(event.player_index)
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
-    if ENABLE_SEPARATE_SPAWNS then
-        SeparateSpawnsPlayerRespawned(event)        
-    end
+    SeparateSpawnsPlayerRespawned(event)
    
     PlayerRespawnItems(event)
 
-    if ENABLE_LONGREACH then
+    if global.ocfg.enable_long_reach then
         GivePlayerLongReach(game.players[event.player_index])
     end
 end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
-    if ENABLE_SEPARATE_SPAWNS then
-        FindUnusedSpawns(event)
-    end
+    FindUnusedSpawns(game.players[event.player_index], true)
 end)
 
 script.on_event(defines.events.on_built_entity, function(event)
-    if ENABLE_AUTOFILL then
-        Autofill(event)
-    end
 
-    if ENABLE_REGROWTH then
-        OarcRegrowthOffLimitsChunk(event.created_entity.position)
+    if global.ocfg.enable_regrowth then
+        OarcRegrowthOffLimits(event.created_entity.position, 2)
     end
 
     if ENABLE_ANTI_GRIEFING then
@@ -228,19 +212,17 @@ end)
 -- Shared vision, charts a small area around other players
 ----------------------------------------
 script.on_event(defines.events.on_tick, function(event)
-    if ENABLE_REGROWTH then
+    if global.ocfg.enable_regrowth then
         OarcRegrowthOnTick()
     end
 
-    if ENABLE_ABANDONED_BASE_REMOVAL then
+    if global.ocfg.enable_abandoned_base_removal then
         OarcRegrowthForceRemovalOnTick()
     end
 
-    if ENABLE_SEPARATE_SPAWNS then
-        DelayedSpawnOnTick()
-    end
+    DelayedSpawnOnTick()
 
-    if FRONTIER_ROCKET_SILO_MODE then
+    if global.ocfg.frontier_rocket_silo then
         DelayedSiloCreationOnTick(game.surfaces[GAME_SURFACE_NAME])
     end
 
@@ -248,7 +230,7 @@ end)
 
 
 script.on_event(defines.events.on_sector_scanned, function (event)
-    if ENABLE_REGROWTH then
+    if global.ocfg.enable_regrowth then
         OarcRegrowthSectorScan(event)
     end
 end)
@@ -258,29 +240,30 @@ end)
 -- Refresh areas where stuff is built, and mark any chunks with player
 -- built stuff as permanent.
 ----------------------------------------
-if ENABLE_REGROWTH then
-
-    script.on_event(defines.events.on_robot_built_entity, function (event)
-        OarcRegrowthOffLimitsChunk(event.created_entity.position)
-    end)
-
-    script.on_event(defines.events.on_player_mined_entity, function(event)
-        OarcRegrowthCheckChunkEmpty(event)
-    end)
-    
-    script.on_event(defines.events.on_robot_mined_entity, function(event)
-        OarcRegrowthCheckChunkEmpty(event)
-    end)
-
-end
-
+script.on_event(defines.events.on_robot_built_entity, function (event)
+    if global.ocfg.enable_regrowth then
+        OarcRegrowthOffLimits(event.created_entity.position, 2)
+    end
+end)
+-- I disabled this because it's too much overhead for too little gain!
+-- script.on_event(defines.events.on_player_mined_entity, function(event)
+--     if global.ocfg.enable_regrowth then
+--         OarcRegrowthCheckChunkEmpty(event)
+--     end
+-- end)
+-- script.on_event(defines.events.on_robot_mined_entity, function(event)
+--     if global.ocfg.enable_regrowth then
+--         OarcRegrowthCheckChunkEmpty(event)
+--     end
+-- end)
 
 
 ----------------------------------------
 -- Shared chat, so you don't have to type /s
+-- But you do lose your player colors across forces.
 ----------------------------------------
 script.on_event(defines.events.on_console_chat, function(event)
-    if (ENABLE_SHARED_TEAM_CHAT) then
+    if (global.ocfg.enable_shared_chat) then
         if (event.player_index ~= nil) then
             ShareChatBetweenForces(game.players[event.player_index], event.message)
         end
@@ -292,8 +275,16 @@ end)
 -- This is where you can permanently remove researched techs
 ----------------------------------------
 script.on_event(defines.events.on_research_finished, function(event)
-    if FRONTIER_ROCKET_SILO_MODE then
+    
+    -- Never allows players to build rocket-silos in "frontier" mode.
+    if global.ocfg.frontier_rocket_silo then
         RemoveRecipe(event.research.force, "rocket-silo")
+    end
+
+    if LOCK_GOODIES_UNTIL_ROCKET_LAUNCH and 
+        (not global.satellite_sent or not global.satellite_sent[event.research.force]) then
+        RemoveRecipe(event.research.force, "productivity-module-3")
+        RemoveRecipe(event.research.force, "speed-module-3")
     end
 end)
 
@@ -302,44 +293,9 @@ end)
 -- This is where I modify biter spawning based on location and other factors.
 ----------------------------------------
 script.on_event(defines.events.on_entity_spawned, function(event)
-    if (OARC_MODIFIED_ENEMY_SPAWNING) then
+    if (global.ocfg.modified_enemy_spawning) then
         ModifyEnemySpawnsNearPlayerStartingAreas(event)
     end
 end)
+
 -- on_biter_base_built -- Worth considering for later.
-
---------------------------------------------------------------------------------
--- Rocket Launch Event Code
--- Controls the "win condition"
---------------------------------------------------------------------------------
-function RocketLaunchEvent(event)
-    local force = event.rocket.force
-    
-    if event.rocket.get_item_count("satellite") == 0 then
-        for index, player in pairs(force.players) do
-            player.print("You launched the rocket, but you didn't put a satellite inside.")
-        end
-        return
-    end
-
-    if not global.satellite_sent then
-        global.satellite_sent = {}
-    end
-
-    if global.satellite_sent[force.name] then
-        global.satellite_sent[force.name] = global.satellite_sent[force.name] + 1   
-    else
-        game.set_game_state{game_finished=true, player_won=true, can_continue=true}
-        global.satellite_sent[force.name] = 1
-    end
-    
-    for index, player in pairs(force.players) do
-        if player.gui.left.rocket_score then
-            player.gui.left.rocket_score.rocket_count.caption = tostring(global.satellite_sent[force.name])
-        else
-            local frame = player.gui.left.add{name = "rocket_score", type = "frame", direction = "horizontal", caption="Score"}
-            frame.add{name="rocket_count_label", type = "label", caption={"", "Satellites launched", ":"}}
-            frame.add{name="rocket_count", type = "label", caption=tostring(global.satellite_sent[force.name])}
-        end
-    end
-end

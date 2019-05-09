@@ -24,6 +24,7 @@ local roles = {
   {display_name = "[Misc]"},
   {display_name = "[Aliens]"},
   {display_name = "[Rocket]"},
+  {display_name = "[Trainssssssss !!!]"},
   {display_name = "[AFK]"},
   {display_name = "Clear"}}
 

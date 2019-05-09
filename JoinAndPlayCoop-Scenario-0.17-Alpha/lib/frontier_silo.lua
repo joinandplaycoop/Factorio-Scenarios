@@ -9,36 +9,57 @@ require("lib/oarc_utils")
 -- Frontier style rocket silo stuff
 --------------------------------------------------------------------------------
 
+
+function SpawnSilosAndGenerateSiloAreas()
+    if (global.ocfg.silo_islands) then
+        local num_spawns = #global.vanillaSpawns
+        for k,v in pairs(global.vanillaSpawns) do       
+            if ((k <= num_spawns/2) and (k%2==1)) then
+                SetFixedSiloPosition({x=v.x,y=v.y})
+                global.vanillaSpawns[k] = nil
+            elseif ((k > num_spawns/2) and (k%2==0)) then
+                SetFixedSiloPosition({x=v.x,y=v.y})
+                global.vanillaSpawns[k] = nil
+            end
+        end
+
+    elseif (global.ocfg.frontier_fixed_pos) then
+        SetFixedSiloPosition(global.ocfg.frontier_pos_table)
+
+    else
+        SetRandomSiloPosition(global.ocfg.frontier_silo_count)
+
+    end
+
+    GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
+end
+
 -- This creates a random silo position, stored to global.siloPosition
--- It uses the config setting SILO_CHUNK_DISTANCE and spawns the silo somewhere
--- on a circle edge with radius using that distance.
+-- It uses the config setting global.ocfg.frontier_silo_distance and spawns the
+-- silo somewhere on a circle edge with radius using that distance.
 function SetRandomSiloPosition(num_silos)
     if (global.siloPosition == nil) then
-
         global.siloPosition = {}
+    end
 
-        random_angle_offset = math.random(0, math.pi * 2)
+    random_angle_offset = math.random(0, math.pi * 2)
 
-        for i=1,num_silos do
-            theta = ((math.pi * 2) / num_silos);
-            angle = (theta * i) + random_angle_offset;
+    for i=1,num_silos do
+        theta = ((math.pi * 2) / num_silos);
+        angle = (theta * i) + random_angle_offset;
 
-            tx = (SILO_CHUNK_DISTANCE*CHUNK_SIZE * math.cos(angle))
-            ty = (SILO_CHUNK_DISTANCE*CHUNK_SIZE * math.sin(angle))
+        tx = (global.ocfg.frontier_silo_distance*CHUNK_SIZE * math.cos(angle))
+        ty = (global.ocfg.frontier_silo_distance*CHUNK_SIZE * math.sin(angle))
 
-            table.insert(global.siloPosition, {x=math.floor(tx), y=math.floor(ty)})
+        table.insert(global.siloPosition, {x=math.floor(tx), y=math.floor(ty)})
 
-            log("Silo position: " .. tx .. ", " .. ty .. ", " .. angle)
-        end
+        log("Silo position: " .. tx .. ", " .. ty .. ", " .. angle)
     end
 end
 
 -- Sets the global.siloPosition var to the set in the config file
 function SetFixedSiloPosition(pos)
-    if (global.siloPosition == nil) then
-        global.siloPosition = {}
-        table.insert(global.siloPosition, SILO_POSITION)
-    end
+    table.insert(global.siloPosition, pos)
 end
 
 -- Create a rocket silo at the specified positionmmmm
@@ -78,21 +99,21 @@ local function CreateRocketSilo(surface, siloPosition, force)
     silo.minable = false
 
     -- TAG it on the main force at least.
-    game.forces[MAIN_FORCE].add_chart_tag(game.surfaces[GAME_SURFACE_NAME],
+    game.forces[global.ocfg.main_force].add_chart_tag(game.surfaces[GAME_SURFACE_NAME],
                                             {position=siloPosition, text="Rocket Silo",
                                                 icon={type="item",name="rocket-silo"}})
 
     -- Make silo safe from being removed by regrowth
-    if ENABLE_REGROWTH then
+    -- if global.ocfg.enable_regrowth then
         OarcRegrowthOffLimits(siloPosition, 5)
-    end
+    -- end
 
 
     if ENABLE_SILO_BEACONS then
-        PhilipsBeacons(surface, siloPosition, game.forces[MAIN_FORCE])
+        PhilipsBeacons(surface, siloPosition, game.forces[global.ocfg.main_force])
     end
     if ENABLE_SILO_RADAR then
-        PhilipsRadar(surface, siloPosition, game.forces[MAIN_FORCE])
+        PhilipsRadar(surface, siloPosition, game.forces[global.ocfg.main_force])
     end
         
 end
@@ -103,7 +124,7 @@ function GenerateAllSilos(surface)
     
     -- Create each silo in the list
     for idx,siloPos in pairs(global.siloPosition) do
-        CreateRocketSilo(surface, siloPos, MAIN_FORCE)
+        CreateRocketSilo(surface, siloPos, global.ocfg.main_force)
     end
 end
 
@@ -111,7 +132,7 @@ end
 function GenerateRocketSiloChunk(event)
 
     -- Silo generation can take awhile depending on the number of silos.
-    if (game.tick < SILO_NUM_SPAWNS*10*TICKS_PER_SECOND) then
+    if (game.tick < #global.siloPosition*10*TICKS_PER_SECOND) then
         local surface = event.surface
         local chunkArea = event.area
 
@@ -134,9 +155,9 @@ function GenerateRocketSiloChunk(event)
                 end
 
                 -- Remove trees/resources inside the spawn area
-                RemoveInCircle(surface, chunkArea, "tree", siloPos, ENFORCE_LAND_AREA_TILE_DIST+5)
-                RemoveInCircle(surface, chunkArea, "resource", siloPos, ENFORCE_LAND_AREA_TILE_DIST+5)
-                RemoveInCircle(surface, chunkArea, "cliff", siloPos, ENFORCE_LAND_AREA_TILE_DIST+5)
+                RemoveInCircle(surface, chunkArea, "tree", siloPos, global.ocfg.spawn_config.gen_settings.land_area_tiles+5)
+                RemoveInCircle(surface, chunkArea, "resource", siloPos, global.ocfg.spawn_config.gen_settings.land_area_tiles+5)
+                RemoveInCircle(surface, chunkArea, "cliff", siloPos, global.ocfg.spawn_config.gen_settings.land_area_tiles+5)
                 RemoveDecorationsArea(surface, chunkArea)
 
                 -- Create rocket silo
@@ -149,10 +170,10 @@ end
 -- Generate chunks where we plan to place the rocket silos.
 function GenerateRocketSiloAreas(surface)
     for idx,siloPos in pairs(global.siloPosition) do
-        if (ENABLE_SILO_VISION) then
-            ChartRocketSiloAreas(surface, game.forces[MAIN_FORCE])
-        end
         surface.request_to_generate_chunks({siloPos.x, siloPos.y}, 3)
+    end
+    if (global.ocfg.frontier_silo_vision) then
+        ChartRocketSiloAreas(surface, game.forces[global.ocfg.main_force])
     end
 end
 
@@ -170,8 +191,9 @@ global.oarc_silos_generated = false
 function DelayedSiloCreationOnTick(surface)
 
     -- Delay the creation of the silos so we place them on already generated lands.
-    if (not global.oarc_silos_generated and (game.tick >= SILO_NUM_SPAWNS*10*TICKS_PER_SECOND)) then
+    if (not global.oarc_silos_generated and (game.tick >= #global.siloPosition*10*TICKS_PER_SECOND)) then
         log("Frontier silos generated!")
+        SendBroadcastMsg("Rocket silos are now available!")
         global.oarc_silos_generated = true
         GenerateAllSilos(surface)
     end

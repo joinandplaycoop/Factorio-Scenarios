@@ -49,11 +49,11 @@ local function fillVanillaConfig()
     config["coal"] = {
         type="resource-ore",
         
-        allotment=80,
+        allotment=90,
         
         spawns_per_region={min=1, max=1},
         size={min=15, max=25},
-        richness=16000,
+        richness=30000,
         min_amount=350,
 
         starting={richness=6000, size=20, probability=1},

@@ -34,6 +34,7 @@ require("locale/game_opts")
 require("locale/temp/rgcommand")
 require("locale/temp/helper_commands")
 
+
 -- Main Configuration File
 require("config")
 
@@ -88,6 +89,7 @@ end
 -- On Init - only runs once the first 
 --   time the game starts
 ----------------------------------------
+require("control1")
 script.on_init(function(event)
 
     -- CreateLobbySurface() -- Currently unused, but have plans for future.
@@ -320,6 +322,8 @@ end)
 -- Refresh areas where stuff is built, and mark any chunks with player
 -- built stuff as permanent.
 ----------------------------------------
+
+
 if ENABLE_REGROWTH then
 
     script.on_event(defines.events.on_robot_built_entity, function (event)
@@ -358,4 +362,7 @@ script.on_event(defines.events.on_research_finished, function(event)
         RemoveRecipe(event.research.force, "rocket-silo")
     end
 end)
+
+
+
 

@@ -32,6 +32,8 @@ C:\Users\user\AppData\Roaming\Factorio\scenarios\FactorioScenarioMultiplayerSpaw
 
 ### STEP 2
 
+Rename "example-config.lua" to config.lua. This will make sure that the next time you update, it won't overwrite your own config file.
+
 Go into config.lua and edit the strings to add your own server messages.
 
 Rename the "FactorioScenarioMultiplayerSpawn" folder to something shorter and more convenient (optional).
@@ -100,3 +102,8 @@ Praise be to Mylon
 Feel free to submit bugs/fixes/requests/pulls/forks whatever you want.
 
 I do not plan on supporting PvP, but I will help anyone who wants to make it a configurable option.
+
+## Contact
+
+discord.gg/trnpcen
+oarcinae@gmail.com

@@ -89,6 +89,24 @@ function getDistance(posA, posB)
     return math.sqrt( (xDist ^ 2) + (yDist ^ 2) ) 
 end
 
+-- Given a table of positions, returns key for closest to given pos.
+function GetClosestPosFromTable(pos, pos_table)
+
+    local closest_dist = nil
+    local closest_key = nil
+
+    for k,p in pairs(pos_table) do
+        local new_dist = getDistance(pos, p)
+        if (closest_dist == nil) then
+            closest_dist = new_dist
+            closest_key = k
+        elseif (closest_dist > new_dist) then
+            closest_dist = new_dist
+            closest_key = k
+        end
+    end
+end
+
 -- Chart area for a force
 function ChartArea(force, position, chunkDist, surface)
     force.chart(surface,
@@ -370,6 +388,21 @@ function AddRecipe(force, recipeName)
     end
 end
 
+-- General command for disabling a tech.
+function DisableTech(force, techName)
+    if force.technologies[techName] then
+        force.technologies[techName].enabled = false
+    end
+end
+
+-- General command for enabling a tech.
+function EnableTech(force, techName)
+    if force.technologies[techName] then
+        force.technologies[techName].enabled = true
+    end
+end
+
+
 -- Get an area given a position and distance.
 -- Square length = 2x distance
 function GetAreaAroundPos(pos, dist)
@@ -414,13 +447,13 @@ function CreateGameSurface()
     -- Get starting surface settings.
     local nauvis_settings =  game.surfaces["nauvis"].map_gen_settings
 
-    if ENABLE_VANILLA_SPAWNS then
-        nauvis_settings.starting_points = CreateVanillaSpawns(VANILLA_SPAWN_COUNT, VANILLA_SPAWN_SPACING)
-        -- DeleteAllChunksExceptCenter(game.surfaces[GAME_SURFACE_NAME])
+    if global.ocfg.enable_vanilla_spawns then
+        nauvis_settings.starting_points = CreateVanillaSpawns(global.ocfg.vanilla_spawn_count, global.ocfg.vanilla_spawn_spacing)
 
-        -- ISLAND MAP GEN -- WARNING
-        -- nauvis_settings.property_expression_names.elevation = "0_17-island"
-        -- ISLAND MAP GEN -- WARNING
+        -- ENFORCE ISLAND MAP GEN
+        if (global.ocfg.silo_islands) then
+            nauvis_settings.property_expression_names.elevation = "0_17-island"
+        end
     end
 
     -- Create new game surface
@@ -462,21 +495,21 @@ function DowngradeWormsInArea(surface, area, small_percent, medium_percent, big_
         local worm_pos = entity.position
         local worm_name = entity.name
 
-        -- If number is more than small percent, change to small
+        -- If number is less than small percent, change to small
         if (rand_percent <= small_percent) then
             if (not (worm_name == "small-worm-turret")) then
                 entity.destroy()
                 surface.create_entity{name = "small-worm-turret", position = worm_pos, force = game.forces.enemy}
             end            
 
-        -- ELSE If number is more than medium percent, change to small
+        -- ELSE If number is less than medium percent, change to small
         elseif (rand_percent <= medium_percent) then
             if (not (worm_name == "medium-worm-turret")) then
                 entity.destroy()
                 surface.create_entity{name = "medium-worm-turret", position = worm_pos, force = game.forces.enemy}
             end
 
-        -- ELSE If number is more than big percent, change to small
+        -- ELSE If number is less than big percent, change to small
         elseif (rand_percent <= big_percent) then
             if (not (worm_name == "big-worm-turret")) then
                 entity.destroy()
@@ -489,14 +522,14 @@ function DowngradeWormsInArea(surface, area, small_percent, medium_percent, big_
 end
 
 function DowngradeWormsDistanceBasedOnChunkGenerate(event)
-    if (getDistance({x=0,y=0}, event.area.left_top) < (NEAR_MAX_DIST*CHUNK_SIZE)) then
+    if (getDistance({x=0,y=0}, event.area.left_top) < (global.ocfg.near_dist_end*CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 100, 100, 100)
-    elseif (getDistance({x=0,y=0}, event.area.left_top) < (FAR_MIN_DIST*CHUNK_SIZE)) then
+    elseif (getDistance({x=0,y=0}, event.area.left_top) < (global.ocfg.far_dist_start*CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 50, 90, 100)
-    elseif (getDistance({x=0,y=0}, event.area.left_top) < (FAR_MAX_DIST*CHUNK_SIZE)) then
+    elseif (getDistance({x=0,y=0}, event.area.left_top) < (global.ocfg.far_dist_end*CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 20, 80, 97)
     else
-        DowngradeWormsInArea(event.surface, event.area, 0, 20, 85)
+        DowngradeWormsInArea(event.surface, event.area, 0, 20, 90)
     end
 end
 
@@ -542,7 +575,6 @@ end
 --------------------------------------------------------------------------------
 function AntiGriefing(force)
     force.zoom_to_world_deconstruction_planner_enabled=false
-    force.friendly_fire=false
     SetForceGhostTimeToLive(force)
 end
 
@@ -673,44 +705,6 @@ function TransferItemMultipleTypes(srcInv, destEntity, itemNameArray, itemCount)
     return ret -- Return the last error code
 end
 
--- Autofills a turret with ammo
-function AutofillTurret(player, turret)
-    local mainInv = player.get_inventory(defines.inventory.player_main)
-
-    -- Attempt to transfer some ammo
-    local ret = TransferItemMultipleTypes(mainInv, turret, {"uranium-rounds-magazine", "piercing-rounds-magazine", "firearm-magazine"}, AUTOFILL_TURRET_AMMO_QUANTITY)
-
-    -- Check the result and print the right text to inform the user what happened.
-    if (ret > 0) then
-        -- Inserted ammo successfully
-        -- FlyingText("Inserted ammo x" .. ret, turret.position, my_color_red, player.surface)
-    elseif (ret == -1) then
-        FlyingText("Out of ammo!", turret.position, my_color_red, player.surface) 
-    elseif (ret == -2) then
-        FlyingText("Autofill ERROR! - Report this bug!", turret.position, my_color_red, player.surface)
-    end
-end
-
--- Autofills a vehicle with fuel, bullets and shells where applicable
-function AutoFillVehicle(player, vehicle)
-    local mainInv = player.get_inventory(defines.inventory.player_main)
-
-    -- Attempt to transfer some fuel
-    if ((vehicle.name == "car") or (vehicle.name == "tank") or (vehicle.name == "locomotive")) then
-        TransferItemMultipleTypes(mainInv, vehicle, {"nuclear-fuel", "rocket-fuel", "solid-fuel", "coal", "wood"}, 50)
-    end
-
-    -- Attempt to transfer some ammo
-    if ((vehicle.name == "car") or (vehicle.name == "tank")) then
-        TransferItemMultipleTypes(mainInv, vehicle, {"uranium-rounds-magazine", "piercing-rounds-magazine", "firearm-magazine"}, 100)
-    end
-
-    -- Attempt to transfer some tank shells
-    if (vehicle.name == "tank") then
-        TransferItemMultipleTypes(mainInv, vehicle, {"explosive-uranium-cannon-shell", "uranium-cannon-shell", "explosive-cannon-shell", "cannon-shell"}, 100)
-    end
-end
-
 --------------------------------------------------------------------------------
 -- Resource patch and starting area generation
 --------------------------------------------------------------------------------
@@ -730,7 +724,7 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius)
 
             -- Fill in all unexpected water in a circle
             if (distVar < tileRadSqr) then
-                if (surface.get_tile(i,j).collides_with("water-tile") or OARC_CFG.gen_settings.force_grass) then
+                if (surface.get_tile(i,j).collides_with("water-tile") or global.ocfg.spawn_config.gen_settings.force_grass) then
                     table.insert(dirtTiles, {name = "grass-1", position ={i,j}})
                 end
             end
@@ -761,7 +755,7 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius)
 
             -- Fill in all unexpected water in a circle
             if (distVar < tileRadius+2) then
-                if (surface.get_tile(i,j).collides_with("water-tile") or OARC_CFG.gen_settings.force_grass) then
+                if (surface.get_tile(i,j).collides_with("water-tile") or global.ocfg.spawn_config.gen_settings.force_grass) then
                     table.insert(dirtTiles, {name = "grass-1", position ={i,j}})
                 end
             end
@@ -790,7 +784,7 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius)
             local distVar = math.floor((centerPos.x - i)^2 + (centerPos.y - j)^2)
 
             -- Create a circle of water
-            if ((distVar < tileRadSqr+(1500*MOAT_SIZE_MODIFIER)) and 
+            if ((distVar < tileRadSqr+(1500*global.ocfg.spawn_config.gen_settings.moat_size_modifier)) and 
                 (distVar > tileRadSqr)) then
                 table.insert(waterTiles, {name = "water", position ={i,j}})
             end
@@ -824,7 +818,7 @@ function GenerateResourcePatch(surface, resourceName, diameter, pos, amount)
     end
     for y=-midPoint, midPoint do
         for x=-midPoint, midPoint do
-            if (not OARC_CFG.gen_settings.resources_circle_shape or ((x)^2 + (y)^2 < midPoint^2)) then
+            if (not global.ocfg.spawn_config.gen_settings.resources_circle_shape or ((x)^2 + (y)^2 < midPoint^2)) then
                 surface.create_entity({name=resourceName, amount=amount,
                     position={pos.x+x, pos.y+y}})
             end
@@ -846,9 +840,9 @@ function CreateWall(surface, pos)
     end
 end
 
-function CreateHoldingPen(surface, chunkArea, sizeTiles, walls)
-    if (((chunkArea.left_top.x == -32) or (chunkArea.left_top.x == 0)) and
-        ((chunkArea.left_top.y == -32) or (chunkArea.left_top.y == 0))) then
+function CreateHoldingPen(surface, chunkArea, sizeTiles, sizeMoat)
+    if (((chunkArea.left_top.x >= -(sizeTiles+sizeMoat+CHUNK_SIZE)) and (chunkArea.left_top.x <= (sizeTiles+sizeMoat+CHUNK_SIZE))) and
+        ((chunkArea.left_top.y >= -(sizeTiles+sizeMoat+CHUNK_SIZE)) and (chunkArea.left_top.y <= (sizeTiles+sizeMoat+CHUNK_SIZE)))) then
 
         -- Remove stuff
         RemoveAliensInArea(surface, chunkArea)
@@ -862,38 +856,24 @@ function CreateHoldingPen(surface, chunkArea, sizeTiles, walls)
         for i=chunkArea.left_top.x,chunkArea.right_bottom.x,1 do
             for j=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
 
-                if ((i>-sizeTiles) and (i<(sizeTiles-1)) and (j>-sizeTiles) and (j<(sizeTiles-1))) then
+                -- Are we within the moat area?
+                if ((i>-(sizeTiles+sizeMoat)) and (i<((sizeTiles+sizeMoat)-1)) and
+                    (j>-(sizeTiles+sizeMoat)) and (j<((sizeTiles+sizeMoat)-1))) then
 
-                    -- Fill all area with grass only
-                    table.insert(grassTiles, {name = "grass-1", position ={i,j}})
+                    -- Are we within the land area? Place land.
+                    if ((i>-(sizeTiles)) and (i<((sizeTiles)-1)) and
+                        (j>-(sizeTiles)) and (j<((sizeTiles)-1))) then
+                        table.insert(grassTiles, {name = "grass-1", position ={i,j}})
 
-                    -- Create the spawn box walls
-                    if (j<(sizeTiles-1) and j>-sizeTiles) then
-
-                        -- Create horizontal sides of center spawn box
-                        if (((j>-sizeTiles and j<-(sizeTiles-4)) or (j<(sizeTiles-1) and j>(sizeTiles-5))) and (i<(sizeTiles-1) and i>-sizeTiles)) then
-                            if walls then
-                                CreateWall(surface, {i,j})
-                            else
-                                table.insert(waterTiles, {name = "water", position ={i,j}})
-                            end
-                        end
-
-                        -- Create vertical sides of center spawn box
-                        if ((i>-sizeTiles and i<-(sizeTiles-4)) or (i<(sizeTiles-1) and i>(sizeTiles-5))) then
-                            if walls then
-                                CreateWall(surface, {i,j})
-                            else
-                                table.insert(waterTiles, {name = "water", position ={i,j}})
-                            end
-                        end
-
+                    -- Else, surround with water.
+                    else
+                        table.insert(waterTiles, {name = "water", position ={i,j}})
                     end
                 end
             end
         end
-        surface.set_tiles(grassTiles)
         surface.set_tiles(waterTiles)
+        surface.set_tiles(grassTiles)
     end
 end
 
@@ -904,7 +884,7 @@ end
 -- Display messages to a user everytime they join
 function PlayerJoinedMessages(event)
     local player = game.players[event.player_index]
-    player.print(WELCOME_MSG)
+    player.print(global.ocfg.welcome_msg)
 end
 
 -- Remove decor to save on file size
@@ -925,16 +905,3 @@ function PlayerSpawnItems(event)
     GivePlayerStarterItems(game.players[event.player_index])
 end
 
--- Autofill softmod
-function Autofill(event)
-    local player = game.players[event.player_index]
-    local eventEntity = event.created_entity
-
-    if (eventEntity.name == "gun-turret") then
-        AutofillTurret(player, eventEntity)
-    end
-
-    if ((eventEntity.name == "car") or (eventEntity.name == "tank") or (eventEntity.name == "locomotive")) then
-        AutoFillVehicle(player, eventEntity)
-    end
-end
