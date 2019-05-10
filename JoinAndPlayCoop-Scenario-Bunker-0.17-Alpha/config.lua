@@ -23,7 +23,7 @@ scenario.config.joinedMessages = {
     "Welcome to Join and play coop server.",
     "In the current game mode, a satellite must be launched from the rocket silo in the center to win!",
     "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill",
-    "",
+    "This server is PVE (no PVP)",
 --    "Look in the car at your spawn for fast start items.",
 --    "The car is also your personal transport to and from the silo.",
     "Discord chat: discord.joinandplaycoop.com",
