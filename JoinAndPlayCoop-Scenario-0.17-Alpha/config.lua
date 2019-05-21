@@ -1,4 +1,5 @@
--- Feb 2019
+-- example-config.lua (Rename this file to config.lua to use it)
+-- Apr 2019
 -- Configuration Options
 -- 
 -- You should be able to leave most of the settings here as defaults.
@@ -30,6 +31,7 @@ SPAWN_WARN_MSG = "Due to the way this scenario works, it may take some time for 
 
 CONTACT_MSG = "Contact: admin@poli.fun (thanks to Oarc for the scenario) discord.joinandplaycoop.com"
 
+
 --------------------------------------------------------------------------------
 -- Module Enables
 --------------------------------------------------------------------------------
@@ -49,6 +51,11 @@ ENABLE_BUDDY_SPAWN = true
 -- This means you can't build silos, but some spawn out in the wild for you to use.
 FRONTIER_ROCKET_SILO_MODE = true
 
+-- Silo Islands
+-- This options is only valid when used with ENABLE_VANILLA_SPAWNS and FRONTIER_ROCKET_SILO_MODE!
+-- This spreads out rocket silos on every OTHER island/vanilla spawn
+SILO_ISLANDS_MODE = false
+
 -- Enable Undecorator
 -- Removes decorative items to reduce save file size.
 ENABLE_UNDECORATOR = true
@@ -60,7 +67,7 @@ ENABLE_TAGS = true
 ENABLE_LONGREACH = true
 
 -- Enable Autofill
-ENABLE_AUTOFILL = false
+ENABLE_AUTOFILL = true
 
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
@@ -83,7 +90,8 @@ ENABLE_ABANDONED_BASE_REMOVAL = true
 ENABLE_RESEARCH_QUEUE = true
 
 -- Lock power armor mk2, atomic bombs and artillery until you launch a rocket.
-LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = true
+-- Also lock speed/prod module-3s
+LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = false
 
 --------------------------------------------------------------------------------
 -- MAP CONFIGURATION OPTIONS
@@ -113,10 +121,10 @@ OARC_MODIFIED_ENEMY_SPAWNING = true
 -- Items provided to the player the first time they join
 PLAYER_SPAWN_START_ITEMS = {
     {name="pistol", count=1},
-    {name="firearm-magazine", count=100},
-    {name="iron-plate", count=8},
-    {name="burner-mining-drill", count = 1},
-    {name="stone-furnace", count = 1},
+    {name="firearm-magazine", count=200},
+    {name="iron-plate", count=16},
+    {name="burner-mining-drill", count = 2},
+    {name="stone-furnace", count = 2},
     -- {name="iron-plate", count=20},
     -- {name="burner-mining-drill", count = 1},
     -- {name="stone-furnace", count = 1},
@@ -145,7 +153,7 @@ PLAYER_RESPAWN_START_ITEMS = {
 -- chunks. It ensures the spawn area isn't too near generated/explored/existing
 -- area. The larger you make this, the further away players will spawn from 
 -- generated map area (even if it is not visible on the map!).
-CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS = 5
+CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS = 10
 
 -- Near Distance in chunks
 -- When a player selects "near" spawn, they will be in or as close to this range as possible.
@@ -167,7 +175,7 @@ FAR_MAX_DIST = 300
 -- https://forums.factorio.com/viewtopic.php?f=7&t=68657
 -- Not sure you need that much anyways....
 -- Points are in an even grid layout.
-VANILLA_SPAWN_COUNT = 900
+VANILLA_SPAWN_COUNT = 60
 
 -- Num tiles between each spawn. (I recommend at least 1000)
 VANILLA_SPAWN_SPACING = 2000
@@ -212,21 +220,21 @@ OARC_CFG = {
     {
         -- Safe area has no aliens
         -- This is the radius in tiles of safe area.
-        safe_radius = CHUNK_SIZE*10,
+        safe_radius = CHUNK_SIZE*20,
 
         -- Warning area has significantly reduced aliens
         -- This is the radius in tiles of warning area.
-        warn_radius = CHUNK_SIZE*10,
+        warn_radius = CHUNK_SIZE*30,
 
         -- 1 : X (spawners alive : spawners destroyed) in this area
         warn_reduction = 40,
 
         -- Danger area has slightly reduce aliens
         -- This is the radius in tiles of danger area.
-        danger_radius = CHUNK_SIZE*40,
+        danger_radius = CHUNK_SIZE*50,
 
         -- 1 : X (spawners alive : spawners destroyed) in this area
-        danger_reduction = 10,
+        danger_reduction = 5,
     },
 
     -- Location of water strip (horizontal)
@@ -354,7 +362,6 @@ ENABLE_SHARED_TEAM_CHAT = true
 -- Special Action Cooldowns
 ---------------------------------------
 RESPAWN_COOLDOWN_IN_MINUTES = 15
-RESPAWN_COOLDOWN_TICKS = TICKS_PER_MINUTE * RESPAWN_COOLDOWN_IN_MINUTES
 
 -- Require playes to be online for at least X minutes
 -- Else their character is removed and their spawn point is freed up for use
@@ -372,11 +379,15 @@ SILO_NUM_SPAWNS = 3
 -- How many chunks away from the center of the map should the silo be spawned
 SILO_CHUNK_DISTANCE = 200
 
--- If this is enabled, you get ONE silo at the location specified below.
+-- If this is enabled, you get silos at the positions specified below.
+-- (The other settings above are ignored in this case.)
 SILO_FIXED_POSITION = false
 
--- If you want to set a fixed spawn location for a single silo
-SILO_POSITION = {x = 0, y = 100}
+-- If you want to set fixed spawn locations for some silos.
+SILO_POSITIONS = {{x = -1000, y = -1000},
+                  {x = -1000, y = 1000},
+                  {x = 1000,  y = -1000},
+                  {x = 1000,  y = 1000}}
 
 -- Set this to false so that you have to search for the silo's.
 ENABLE_SILO_VISION = true
@@ -384,6 +395,13 @@ ENABLE_SILO_VISION = true
 -- Add beacons around the silo (Philip's mod)
 ENABLE_SILO_BEACONS = false
 ENABLE_SILO_RADAR = false
+
+-- Allow silos to be built by the player, but forces them to build in
+-- the fixed locations. If this is false, silos are built and assigned
+-- only to the main force. This can cause a problem for non main forces
+-- when playing with LOCK_GOODIES_UNTIL_ROCKET_LAUNCH enabled.
+ENABLE_SILO_PLAYER_BUILD = true
+
 
 --------------------------------------------------------------------------------
 -- Long Reach Options
@@ -395,7 +413,7 @@ RESOURCE_DIST_BONUS = 6
 --------------------------------------------------------------------------------
 -- Autofill Options
 --------------------------------------------------------------------------------
-AUTOFILL_TURRET_AMMO_QUANTITY = 0
+AUTOFILL_TURRET_AMMO_QUANTITY = 10
 
 --------------------------------------------------------------------------------
 -- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)
@@ -405,4 +423,4 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 0
 ENABLE_ANTI_GRIEFING = true
 
 -- Makes blueprint ghosts dissapear if they have been placed longer than this
-GHOST_TIME_TO_LIVE = 120 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
+GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life

@@ -33,6 +33,7 @@ require("lib/game_opts")
 require("lib/regrowth_map")
 require("lib/player_list")
 require("lib/rocket_launch")
+require("lib/admin_commands")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
@@ -78,6 +79,11 @@ script.on_init(function(event)
     if (global.ocfg.frontier_rocket_silo) then
         SpawnSilosAndGenerateSiloAreas()
     end
+
+    -- Everyone do the shuffle. Helps avoid always starting at the same location.
+    global.vanillaSpawns = FYShuffle(global.vanillaSpawns)
+    log("Vanilla spawns:")
+    log(serpent.block(global.vanillaSpawns))
 end)
 
 
@@ -196,6 +202,9 @@ script.on_event(defines.events.on_player_left_game, function(event)
     FindUnusedSpawns(game.players[event.player_index], true)
 end)
 
+----------------------------------------
+-- On BUILD entity. Don't forget on_robot_built_entity too!
+----------------------------------------
 script.on_event(defines.events.on_built_entity, function(event)
     if global.ocfg.enable_autofill then
         Autofill(event)
@@ -208,7 +217,12 @@ script.on_event(defines.events.on_built_entity, function(event)
     if ENABLE_ANTI_GRIEFING then
         SetItemBlueprintTimeToLive(event)
     end
+
+    if global.ocfg.frontier_rocket_silo then
+        BuildSiloAttempt(event)
+    end
 end)
+
 
 
 ----------------------------------------
@@ -247,7 +261,12 @@ script.on_event(defines.events.on_robot_built_entity, function (event)
     if global.ocfg.enable_regrowth then
         OarcRegrowthOffLimits(event.created_entity.position, 2)
     end
+
+    if global.ocfg.frontier_rocket_silo then
+        BuildSiloAttempt(event)
+    end
 end)
+
 -- I disabled this because it's too much overhead for too little gain!
 -- script.on_event(defines.events.on_player_mined_entity, function(event)
 --     if global.ocfg.enable_regrowth then
@@ -280,7 +299,7 @@ end)
 script.on_event(defines.events.on_research_finished, function(event)
     
     -- Never allows players to build rocket-silos in "frontier" mode.
-    if global.ocfg.frontier_rocket_silo then
+    if global.ocfg.frontier_rocket_silo and not global.ocfg.frontier_allow_build then
         RemoveRecipe(event.research.force, "rocket-silo")
     end
 
@@ -288,6 +307,10 @@ script.on_event(defines.events.on_research_finished, function(event)
         (not global.satellite_sent or not global.satellite_sent[event.research.force.name]) then
         RemoveRecipe(event.research.force, "productivity-module-3")
         RemoveRecipe(event.research.force, "speed-module-3")
+    end
+
+    if ENABLE_LOADERS then
+        EnableLoaders(event)
     end
 end)
 

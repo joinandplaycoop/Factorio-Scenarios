@@ -392,6 +392,7 @@ end
 function DisableTech(force, techName)
     if force.technologies[techName] then
         force.technologies[techName].enabled = false
+        force.technologies[techName].visible_when_disabled = true
     end
 end
 
@@ -753,7 +754,8 @@ end
 
 -- Autofills a turret with ammo
 function AutofillTurret(player, turret)
-    local mainInv = player.get_inventory(defines.inventory.character_main)
+    local mainInv = player.get_main_inventory()
+    if (mainInv == nil) then return end
 
     -- Attempt to transfer some ammo
     local ret = TransferItemMultipleTypes(mainInv, turret, {"uranium-rounds-magazine", "piercing-rounds-magazine", "firearm-magazine"}, AUTOFILL_TURRET_AMMO_QUANTITY)
@@ -771,8 +773,9 @@ end
 
 -- Autofills a vehicle with fuel, bullets and shells where applicable
 function AutoFillVehicle(player, vehicle)
-    local mainInv = player.get_inventory(defines.inventory.character_main)
-
+    local mainInv = player.get_main_inventory()
+    if (mainInv == nil) then return end
+    
     -- Attempt to transfer some fuel
     if ((vehicle.name == "car") or (vehicle.name == "tank") or (vehicle.name == "locomotive")) then
         TransferItemMultipleTypes(mainInv, vehicle, {"nuclear-fuel", "rocket-fuel", "solid-fuel", "coal", "wood"}, 50)
@@ -994,11 +997,29 @@ function Autofill(event)
     local player = game.players[event.player_index]
     local eventEntity = event.created_entity
 
+    -- Make sure player isn't dead?
+    if (player.character == nil) then return end
+
     if (eventEntity.name == "gun-turret") then
         AutofillTurret(player, eventEntity)
     end
 
     if ((eventEntity.name == "car") or (eventEntity.name == "tank") or (eventEntity.name == "locomotive")) then
         AutoFillVehicle(player, eventEntity)
+    end
+end
+
+-- Map loaders to logistics tech for unlocks.
+local loaders_technology_map = {
+    ['logistics'] = 'loader',
+    ['logistics-2'] = 'fast-loader',
+    ['logistics-3'] = 'express-loader'
+}
+
+function EnableLoaders(event)
+    local research = event.research
+    local recipe = loaders_technology_map[research.name]
+    if recipe then
+        research.force.recipes[recipe].enabled = true
     end
 end
