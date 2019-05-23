@@ -19,8 +19,6 @@ end)
 
 
 
-local seed = 1653432
-
 local chest_items = {
   { name = "raw-fish", count = {1, 5} },
   { name = "solid-fuel", count = {5, 10} },
@@ -127,7 +125,7 @@ end
 local function chunk_generated(event)
   local area = event.area
   local surface = event.surface
-
+  local seed = game.default_map_gen_settings.seed
   local tiles = {}
 
   if surface.name ~= "cave" then return end
