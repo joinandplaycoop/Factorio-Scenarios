@@ -30,8 +30,6 @@ SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
 SPAWN_WARN_MSG = "Due to the way this scenario works, it may take some time for the land around your new spawn area to generate... Please wait for 10-20 seconds when you select your first spawn."
 
 CONTACT_MSG = "Contact: admin@poli.fun (thanks to Oarc for the scenario) discord.joinandplaycoop.com"
-
-
 --------------------------------------------------------------------------------
 -- Module Enables
 --------------------------------------------------------------------------------
@@ -68,6 +66,9 @@ ENABLE_LONGREACH = true
 
 -- Enable Autofill
 ENABLE_AUTOFILL = true
+
+-- Enable vanilla loaders
+ENABLE_LOADERS = true
 
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
@@ -328,10 +329,10 @@ OARC_CFG = {
         ["crude-oil"] = 
         {
             num_patches = 2,
-            amount = 300000,
-            x_offset_start = 0,
+            amount = 3000000,
+            x_offset_start = -3,
             y_offset_start = 48,
-            x_offset_next = 4,
+            x_offset_next = 6,
             y_offset_next = 0
         }
     },
@@ -349,7 +350,8 @@ ENABLE_SEPARATE_TEAMS = true
 -- Main force is what default players join
 MAIN_FORCE = "Main Force"
 
--- Enable if people can allow others to join their base
+-- Enable if players can allow others to join their base.
+-- And specify how many including the host are allowed.
 ENABLE_SHARED_SPAWNS = true
 MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN = 0
 

@@ -424,7 +424,7 @@ function GetNumberOfAvailableSharedSpawns()
             (game.players[ownerName] ~= nil) and
             game.players[ownerName].connected) then
             if ((global.ocfg.max_players_shared_spawn == 0) or
-                (GetOnlinePlayersAtSharedSpawn(ownerName) < global.ocfg.max_players_shared_spawn)) then
+                (#global.sharedSpawns[ownerName].players < global.ocfg.max_players_shared_spawn)) then
                 count = count+1
             end
         end
@@ -647,7 +647,7 @@ function CreateForce(force_name)
             AntiGriefing(newForce)
         end
 
-        if LOCK_GOODIES_UNTIL_ROCKET_LAUNCH and not global.satellite_sent then
+        if global.ocfg.lock_goodies_rocket_launch and not global.satellite_sent then
             DisableTech(newForce, "atomic-bomb")
             DisableTech(newForce, "power-armor-mk2")
             DisableTech(newForce, "artillery")

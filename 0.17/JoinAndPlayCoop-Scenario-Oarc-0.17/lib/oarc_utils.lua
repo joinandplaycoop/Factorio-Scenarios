@@ -5,6 +5,7 @@
 -- Also contains some constants and gui styles
 
 require("lib/oarc_gui_utils")
+require("mod-gui")
 
 --------------------------------------------------------------------------------
 -- Useful constants
@@ -41,6 +42,14 @@ end
 function SendMsg(playerName, msg)
     if ((game.players[playerName] ~= nil) and (game.players[playerName].connected)) then
         game.players[playerName].print(msg)
+    end
+end
+
+-- Simple way to write to a file. Always appends. Only server.
+-- Has a global setting for enable/disable
+function ServerWriteFile(filename, msg)
+    if (global.ocfg.enable_server_write_files) then
+        game.write_file(filename, msg, true, 0)
     end
 end
 

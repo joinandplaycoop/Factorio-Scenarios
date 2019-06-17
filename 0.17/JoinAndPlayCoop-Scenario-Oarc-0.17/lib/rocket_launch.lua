@@ -25,6 +25,8 @@ function RocketLaunchEvent(event)
     if not global.satellite_sent then
         global.satellite_sent = {}
         SendBroadcastMsg("Team " .. event.rocket.force.name .. " was the first to launch a rocket!")
+        ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " was the first to launch a rocket!" .. "\n")
+
 		for name,player in pairs(game.connected_players) do
 	        CreateRocketGui(player)
 	    end
@@ -33,19 +35,19 @@ function RocketLaunchEvent(event)
     -- Track additional satellites launched by this force
     if global.satellite_sent[force.name] then
         global.satellite_sent[force.name] = global.satellite_sent[force.name] + 1   
-    
+        ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name] .. "\n")
+
     -- First sat launch for this force.
     else
-        game.set_game_state{game_finished=true, player_won=true, can_continue=true}
+        -- game.set_game_state{game_finished=true, player_won=true, can_continue=true}
         global.satellite_sent[force.name] = 1
+        ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " launched their first rocket!" .. "\n")
 
         -- Unlock research
-        if LOCK_GOODIES_UNTIL_ROCKET_LAUNCH then
-            for _,f in pairs(game.forces) do
-                EnableTech(f, "atomic-bomb")
-                EnableTech(f, "power-armor-mk2")
-                EnableTech(f, "artillery")
-            end
+        if global.ocfg.lock_goodies_rocket_launch then
+            EnableTech(force, "atomic-bomb")
+            EnableTech(force, "power-armor-mk2")
+            EnableTech(force, "artillery")
 
             if (force.technologies["speed-module-3"].researched) then
 		    	AddRecipe(force, "speed-module-3")
@@ -59,8 +61,8 @@ end
 
 
 function CreateRocketGui(player)
-    if player.gui.top["rocket-score"] == nil then
-        player.gui.top.add{name="rocket-score", type="button", caption="Rockets"}
+    if mod_gui.get_button_flow(player)["rocket-score"] == nil then
+        mod_gui.get_button_flow(player).add{name="rocket-score", type="button", caption="Rockets", style=mod_gui.button_style}
     end   
 end
 

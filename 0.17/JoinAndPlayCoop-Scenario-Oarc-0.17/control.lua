@@ -173,6 +173,8 @@ script.on_event(defines.events.on_player_joined_game, function(event)
     if global.satellite_sent then
         CreateRocketGui(game.players[event.player_index])
     end
+
+    ServerWriteFile("player_events", game.players[event.player_index].name .. " joined the game." .. "\n")
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
@@ -199,6 +201,7 @@ script.on_event(defines.events.on_player_respawned, function(event)
 end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
+    ServerWriteFile("player_events", game.players[event.player_index].name .. " left the game." .. "\n")
     FindUnusedSpawns(game.players[event.player_index], true)
 end)
 
@@ -220,6 +223,18 @@ script.on_event(defines.events.on_built_entity, function(event)
 
     if global.ocfg.frontier_rocket_silo then
         BuildSiloAttempt(event)
+    end
+end)
+
+
+----------------------------------------
+-- On script_raised_built. This should help catch mods that
+-- place items that don't count as player_built and robot_built.
+-- Specifically FARL.
+----------------------------------------
+script.on_event(defines.events.script_raised_built, function(event)
+    if global.ocfg.enable_regrowth then
+        OarcRegrowthOffLimits(event.entity.position, 2)
     end
 end)
 
@@ -285,6 +300,9 @@ end)
 -- But you do lose your player colors across forces.
 ----------------------------------------
 script.on_event(defines.events.on_console_chat, function(event)
+    if (event.player_index) then
+        ServerWriteFile("server_chat", game.players[event.player_index].name .. ": " .. event.message .. "\n")
+    end
     if (global.ocfg.enable_shared_chat) then
         if (event.player_index ~= nil) then
             ShareChatBetweenForces(game.players[event.player_index], event.message)
@@ -303,13 +321,13 @@ script.on_event(defines.events.on_research_finished, function(event)
         RemoveRecipe(event.research.force, "rocket-silo")
     end
 
-    if LOCK_GOODIES_UNTIL_ROCKET_LAUNCH and 
+    if global.ocfg.lock_goodies_rocket_launch and 
         (not global.satellite_sent or not global.satellite_sent[event.research.force.name]) then
         RemoveRecipe(event.research.force, "productivity-module-3")
         RemoveRecipe(event.research.force, "speed-module-3")
     end
 
-    if ENABLE_LOADERS then
+    if global.ocfg.enable_loaders then
         EnableLoaders(event)
     end
 end)
