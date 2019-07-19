@@ -27,9 +27,8 @@ SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
 "You can be on the main team or your own. All teams are friendly.\n"..
 "If you leave in the first 15 minutes, your base and character will be deleted!"
 
-SPAWN_WARN_MSG = "Due to the way this scenario works, it may take some time for the land around your new spawn area to generate... Please wait for 10-20 seconds when you select your first spawn."
-
 CONTACT_MSG = "Contact: admin@poli.fun (thanks to Oarc for the scenario) discord.joinandplaycoop.com"
+
 --------------------------------------------------------------------------------
 -- Module Enables
 --------------------------------------------------------------------------------
@@ -353,7 +352,7 @@ MAIN_FORCE = "Main Force"
 -- Enable if players can allow others to join their base.
 -- And specify how many including the host are allowed.
 ENABLE_SHARED_SPAWNS = true
-MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN = 0
+MAX_PLAYERS_AT_SHARED_SPAWN = 0
 
 -- Share local team chat with all teams
 -- This makes it so you don't have to use /s
