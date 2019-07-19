@@ -23,17 +23,38 @@ script.on_init(function()
   mgs.height = "2000"
   surface.map_gen_settings = mgs
   game.forces.player.chart(game.surfaces["nauvis"], {{-2000, -2000},{2000, 2000}})
-  local i  = 0
+  local i  = -20
   while i <= 20 do        
-  wall = surface.create_entity{name = "stone-wall", position = {i, 20}, force = default}
+  wall = surface.create_entity{name = "stone-wall", position = {i, 20}, force = Default}
   wall.destructible = false
   wall.minable = false
   
   i = i + 1 
 
 end
+  local i  = -20
+  while i <= 20 do        
+  wall = surface.create_entity{name = "stone-wall", position = {20, i}, force = Default}
+  
+  i = i + 1 
 
+end
+  local i  = 20
+  while i >= -20 do        
+  wall = surface.create_entity{name = "stone-wall", position = {-20, i}, force = Default}
+  
+  i = i - 1 
+
+end
+  local i  = 20
+  while i >= -20 do    
+  wall = surface.create_entity{name = "stone-wall", position = {i, -20}, force = Default}
+  i = i - 1 
+
+end
+test = surface.create_entity{name = "tank", position = {1, 1}, force = default}
 end)
+
 
 script.on_event(defines.events.on_gui_click, function(event)
   local player = game.players[event.player_index]
