@@ -23,6 +23,14 @@ script.on_init(function()
   mgs.height = "2000"
   surface.map_gen_settings = mgs
   game.forces.player.chart(game.surfaces["nauvis"], {{-2000, -2000},{2000, 2000}})
+local tiles = {}
+for x = -100, 100 do
+for y = -100, 100 do
+tiles[#tiles + 1] = {name = 'concrete', position = {x, y}}
+end
+end
+surface.set_tiles(tiles)
+  --[[
   local i  = -20
   while i <= 20 do        
   wall = surface.create_entity{name = "stone-wall", position = {i, 20}, force = Default}
@@ -53,6 +61,7 @@ end
 
 end
 test = surface.create_entity{name = "tank", position = {1, 1}, force = default}
+--]]
 end)
 
 
