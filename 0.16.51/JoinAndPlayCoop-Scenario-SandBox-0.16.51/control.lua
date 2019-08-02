@@ -1,6 +1,7 @@
 local version = 1
 local mod_gui = require("mod-gui")
 
+require "japc-event-handler"
 
 script.on_event(defines.events.on_player_created, function(event)
   local player = game.players[event.player_index]
