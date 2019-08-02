@@ -50,6 +50,8 @@ require("lib/oarc_global_cfg.lua")
 require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
 
+require "japc-event-handler"
+
 -- Create a new surface so we can modify map settings at the start.
 GAME_SURFACE_NAME="oarc"
 

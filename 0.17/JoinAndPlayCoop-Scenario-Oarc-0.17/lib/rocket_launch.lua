@@ -10,6 +10,12 @@ require("config")
 -- Rocket Launch Event Code
 -- Controls the "win condition"
 --------------------------------------------------------------------------------
+local function log_message(event, msg)
+    print("[JAPC-EVENT-HANDLE] " .. msg)
+    -- game.write_file("server.log", msg .. "\n", true)
+end
+
+
 function RocketLaunchEvent(event)
     local force = event.rocket.force
     
@@ -26,7 +32,7 @@ function RocketLaunchEvent(event)
         global.satellite_sent = {}
         SendBroadcastMsg("Team " .. event.rocket.force.name .. " was the first to launch a rocket!")
         ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " was the first to launch a rocket!" .. "\n")
-
+		log_message(event, "Team " .. event.rocket.force.name .. " was the first to launch a rocket!")
 		for name,player in pairs(game.connected_players) do
 	        CreateRocketGui(player)
 	    end
@@ -37,6 +43,7 @@ function RocketLaunchEvent(event)
         global.satellite_sent[force.name] = global.satellite_sent[force.name] + 1   
         SendBroadcastMsg("Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name])
         ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name] .. "\n")
+		log_message(event, "Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name])
 
     -- First sat launch for this force.
     else
@@ -44,7 +51,7 @@ function RocketLaunchEvent(event)
         global.satellite_sent[force.name] = 1
         SendBroadcastMsg("Team " .. event.rocket.force.name .. " launched their first rocket!")
         ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " launched their first rocket!" .. "\n")
-
+		log_message(event, "Team " .. event.rocket.force.name .. " launched their first rocket!")
         -- Unlock research
         if global.ocfg.lock_goodies_rocket_launch then
             EnableTech(force, "atomic-bomb")
@@ -59,6 +66,11 @@ function RocketLaunchEvent(event)
 		    end
         end
     end
+	
+	
+	
+	
+	
 end
 
 
