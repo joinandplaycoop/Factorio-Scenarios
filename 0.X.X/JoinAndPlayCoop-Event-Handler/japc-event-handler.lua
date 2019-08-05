@@ -44,6 +44,7 @@ function RocketLaunchEvent(event)
     
     -- Notify players on force if rocket was launched without sat.
     if event.rocket.get_item_count("satellite") == 0 then
+	log_message(event, "Team " .. event.rocket.force.name .. " has launched a rocket but without a sattelite inside !")
         for index, player in pairs(force.players) do
             player.print("You launched the rocket, but you didn't put a satellite inside.")
         end
