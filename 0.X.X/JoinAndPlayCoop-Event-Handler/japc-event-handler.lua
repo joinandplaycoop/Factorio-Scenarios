@@ -1,5 +1,5 @@
 local function log_message(event, msg)
-    print(event.tick .. " [JAPC-EVENT-HANDLE] " .. msg)
+    print("[JAPC-EVENT-HANDLE] " .. msg)
     -- game.write_file("server.log", msg .. "\n", true)
 end
 
