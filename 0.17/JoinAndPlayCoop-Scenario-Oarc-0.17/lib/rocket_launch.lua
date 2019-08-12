@@ -67,11 +67,18 @@ function RocketLaunchEvent(event)
 		    end
         end
     end
-	
-	
-	
-	
-	
+
+    -- If Rocket panel is open, refresh rocket count.
+    for name,player in pairs(game.connected_players) do
+        local frame = player.gui.left["rocket-panel"]
+        if (frame) then
+            frame.clear()
+            for force_name,sat_count in pairs(global.satellite_sent) do
+                frame.add{name="rc_"..force_name, type = "label",
+                            caption="Team " .. force_name .. ": " .. tostring(sat_count)}
+            end
+        end
+    end
 end
 
 
