@@ -117,12 +117,24 @@ function TeleportPlayer( player )
                 end
             end
         end
+
+        -- Check for entities that player could collide with and get stuck.
+        dest = FindNonCollidingPosition(dest)
+
         -- TODO. transport anyone in the vicinity as well 
         if dest ~= nil then
             player.driving=false;
             player.teleport(dest);
+        else
+            --find_non_colliding_position can return nil if no position found
+            player.print("Error.  No clear place to teleport to.");
         end
     end
+end
+
+-- Utilizes find_non_colliding_position for a small "character" sized object.  Use for teleporting players.
+function FindNonCollidingPosition(position)
+    return game.surfaces[GAME_SURFACE_NAME].find_non_colliding_position("character",  position, 50, 0.1);
 end
 
 function SameCoord(a, b)
