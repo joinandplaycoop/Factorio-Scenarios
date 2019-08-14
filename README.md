@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://getcomfy.eu/">
+  <a href="https://joinandplaycoop.com/">
     <img alt="logo" src="https://i.imgur.com/2mH4I3j.png" width="120">
   </a>
   <br>
