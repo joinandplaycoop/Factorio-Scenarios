@@ -7,7 +7,7 @@
 
 -- Function to update the playlist gui.  Putting this at top to call later.
 -- Basically moved the guts of the expand gui function to here to call it on events.
-function PlayerListUpdate(pframe)
+local function PlayerListUpdate(pframe)
     pframe.clear()
     local scrollFrame = pframe.add{type="scroll-pane",
                                         name="playerList-panel",
@@ -64,7 +64,6 @@ local function ExpandPlayerListGui(player)
                                             name="playerList-panel",
                                             caption="Online:"}
         PlayerListUpdate(frame)
-
     end
 end
 
