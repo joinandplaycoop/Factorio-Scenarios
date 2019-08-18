@@ -4,6 +4,50 @@
 --------------------------------------------------------------------------------
 -- Player List GUI - My own version
 --------------------------------------------------------------------------------
+
+-- Function to update the playlist gui.  Putting this at top to call later.
+-- Basically moved the guts of the expand gui function to here to call it on events.
+local function PlayerListUpdate(pframe)
+    pframe.clear()
+    local scrollFrame = pframe.add{type="scroll-pane",
+                                        name="playerList-panel",
+                                        direction = "vertical"}
+    ApplyStyle(scrollFrame, my_player_list_fixed_width_style)
+    scrollFrame.horizontal_scroll_policy = "never"
+    for _,player in pairs(game.connected_players) do
+        local caption_str = player.name.." ["..player.force.name.."]".." ("..formattime_hours_mins(player.online_time)..")"
+        if (player.admin) then
+            AddLabel(scrollFrame, player.name.."_plist", caption_str, my_player_list_admin_style)
+        else
+            AddLabel(scrollFrame, player.name.."_plist", caption_str, my_player_list_style)
+        end
+    end
+
+    -- List offline players
+    if (global.ocfg.list_offline_players) then
+        AddLabel(scrollFrame, "offline_title_msg", "Offline Players:", my_label_style)
+        for _,player in pairs(game.players) do
+            if (not player.connected) then
+                local caption_str = player.name.." ["..player.force.name.."]".." ("..formattime_hours_mins(player.online_time)..")"
+                local text = scrollFrame.add{type="label", caption=caption_str, name=player.name.."_plist"}
+                ApplyStyle(text, my_player_list_offline_style)
+            end
+        end
+    end
+    local spacer = scrollFrame.add{type="label", caption="     ", name="plist_spacer_plist"}
+    ApplyStyle(spacer, my_player_list_style_spacer)
+end 
+
+-- Event function we can hook to players leaving and entering.  Hooked up in control.lua
+function PlayerListUpdateEvent()
+    for _, player in pairs(game.players) do
+        local frame = mod_gui.get_frame_flow(player)["playerList-panel"]
+        if (frame) then
+            PlayerListUpdate(frame)
+        end
+    end
+end
+
 function CreatePlayerListGui(event)
   local player = game.players[event.player_index]
   if mod_gui.get_button_flow(player).playerList == nil then
@@ -19,33 +63,7 @@ local function ExpandPlayerListGui(player)
         local frame = mod_gui.get_frame_flow(player).add{type="frame",
                                             name="playerList-panel",
                                             caption="Online:"}
-        local scrollFrame = frame.add{type="scroll-pane",
-                                        name="playerList-panel",
-                                        direction = "vertical"}
-        ApplyStyle(scrollFrame, my_player_list_fixed_width_style)
-        scrollFrame.horizontal_scroll_policy = "never"
-        for _,player in pairs(game.connected_players) do
-            local caption_str = player.name.." ["..player.force.name.."]".." ("..formattime_hours_mins(player.online_time)..")"
-            if (player.admin) then
-                AddLabel(scrollFrame, player.name.."_plist", caption_str, my_player_list_admin_style)
-            else
-                AddLabel(scrollFrame, player.name.."_plist", caption_str, my_player_list_style)
-            end
-        end
-
-        -- List offline players
-        if (global.ocfg.list_offline_players) then
-            AddLabel(scrollFrame, "offline_title_msg", "Offline Players:", my_label_style)
-            for _,player in pairs(game.players) do
-                if (not player.connected) then
-                    local caption_str = player.name.." ["..player.force.name.."]".." ("..formattime_hours_mins(player.online_time)..")"
-                    local text = scrollFrame.add{type="label", caption=caption_str, name=player.name.."_plist"}
-                    ApplyStyle(text, my_player_list_offline_style)
-                end
-            end
-        end
-        local spacer = scrollFrame.add{type="label", caption="     ", name="plist_spacer_plist"}
-        ApplyStyle(spacer, my_player_list_style_spacer)
+        PlayerListUpdate(frame)
     end
 end
 
