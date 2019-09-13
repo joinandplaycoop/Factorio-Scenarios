@@ -7,21 +7,23 @@ require("lib/oarc_utils")
 require("config")
 
 --------------------------------------------------------------------------------
--- Rocket Launch Event Code
--- Controls the "win condition"
+-- Inserting Poli's JAPC Event handler
 --------------------------------------------------------------------------------
 local function log_message(event, msg)
     print("[JAPC-EVENT-HANDLE] " .. msg)
     -- game.write_file("server.log", msg .. "\n", true)
 end
 
-
+--------------------------------------------------------------------------------
+-- Rocket Launch Event Code
+-- Controls the "win condition"
+--------------------------------------------------------------------------------
 function RocketLaunchEvent(event)
     local force = event.rocket.force
-    
+
     -- Notify players on force if rocket was launched without sat.
     if event.rocket.get_item_count("satellite") == 0 then
-	log_message(event, "Team " .. event.rocket.force.name .. " has launched a rocket but without a sattelite inside !")
+        log_message(event, "Team " .. event.rocket.force.name .. " has launched a rocket but without a sattelite inside !") -- JAPC EVENT
         for index, player in pairs(force.players) do
             player.print("You launched the rocket, but you didn't put a satellite inside.")
         end
@@ -33,18 +35,19 @@ function RocketLaunchEvent(event)
         global.satellite_sent = {}
         SendBroadcastMsg("Team " .. event.rocket.force.name .. " was the first to launch a rocket!")
         ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " was the first to launch a rocket!" .. "\n")
-		log_message(event, "Team " .. event.rocket.force.name .. " was the first to launch a rocket!")
-		for name,player in pairs(game.connected_players) do
-	        CreateRocketGui(player)
-	    end
+        log_message(event, "Team " .. event.rocket.force.name .. " was the first to launch a rocket!") -- JAPC EVENT
+        
+        for name,player in pairs(game.connected_players) do
+            SetOarcGuiTabEnabled(player, OARC_ROCKETS_GUI_TAB_NAME, true)
+        end
     end
 
     -- Track additional satellites launched by this force
     if global.satellite_sent[force.name] then
-        global.satellite_sent[force.name] = global.satellite_sent[force.name] + 1   
+        global.satellite_sent[force.name] = global.satellite_sent[force.name] + 1
         SendBroadcastMsg("Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name])
         ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name] .. "\n")
-		log_message(event, "Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name])
+        log_message(event, "Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name]) -- JAPC EVENT
 
     -- First sat launch for this force.
     else
@@ -52,7 +55,8 @@ function RocketLaunchEvent(event)
         global.satellite_sent[force.name] = 1
         SendBroadcastMsg("Team " .. event.rocket.force.name .. " launched their first rocket!")
         ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " launched their first rocket!" .. "\n")
-		log_message(event, "Team " .. event.rocket.force.name .. " launched their first rocket!")
+        log_message(event, "Team " .. event.rocket.force.name .. " launched their first rocket!") -- JAPC EVENT
+
         -- Unlock research
         if global.ocfg.lock_goodies_rocket_launch then
             EnableTech(force, "atomic-bomb")
@@ -60,55 +64,28 @@ function RocketLaunchEvent(event)
             EnableTech(force, "artillery")
 
             if (force.technologies["speed-module-3"].researched) then
-		    	AddRecipe(force, "speed-module-3")
-		    end
-		    if (force.technologies["productivity-module-3"].researched) then
-		    	AddRecipe(force, "productivity-module-3")
-		    end
-        end
-    end
-
-    -- If Rocket panel is open, refresh rocket count.
-    for name,player in pairs(game.connected_players) do
-        local frame = player.gui.left["rocket-panel"]
-        if (frame) then
-            frame.clear()
-            for force_name,sat_count in pairs(global.satellite_sent) do
-                frame.add{name="rc_"..force_name, type = "label",
-                            caption="Team " .. force_name .. ": " .. tostring(sat_count)}
+                AddRecipe(force, "speed-module-3")
+            end
+            if (force.technologies["productivity-module-3"].researched) then
+                AddRecipe(force, "productivity-module-3")
             end
         end
     end
 end
 
+function CreateRocketGuiTab(tab_container, player)
+    -- local frame = tab_container.add{type="frame", name="rocket-panel", caption="Satellites Launched:", direction = "vertical"}
 
-function CreateRocketGui(player)
-    if mod_gui.get_button_flow(player)["rocket-score"] == nil then
-        mod_gui.get_button_flow(player).add{name="rocket-score", type="button", caption="Rockets", style=mod_gui.button_style}
-    end   
-end
+    AddLabel(tab_container, nil, "Satellites Launched:", my_label_header_style)
 
-
-local function ExpandRocketGui(player)
-    local frame = player.gui.left["rocket-panel"]
-    if (frame) then
-        frame.destroy()
+    if (global.satellite_sent == nil) then
+        AddLabel(tab_container, nil, "No launches yet.", my_label_style)
     else
-        local frame = player.gui.left.add{type="frame", name="rocket-panel", caption="Satellites Launched:", direction = "vertical"}
-
         for force_name,sat_count in pairs(global.satellite_sent) do
-        	frame.add{name="rc_"..force_name, type = "label",
-    					caption="Team " .. force_name .. ": " .. tostring(sat_count)}
+            AddLabel(tab_container,
+                    "rc_"..force_name,
+                    "Team " .. force_name .. ": " .. tostring(sat_count),
+                    my_label_style)
         end
-    end
-end
-
-function RocketGuiClick(event) 
-    if not (event and event.element and event.element.valid) then return end
-    local player = game.players[event.element.player_index]
-    local name = event.element.name
-
-    if (name == "rocket-score") then
-        ExpandRocketGui(player)        
     end
 end

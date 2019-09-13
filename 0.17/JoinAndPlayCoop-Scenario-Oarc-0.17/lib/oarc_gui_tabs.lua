@@ -44,6 +44,7 @@ function InitOarcGuiTabs(player)
     end
 
     AddOarcGuiTab(player, OARC_ROCKETS_GUI_TAB_NAME)
+    
 end
 
 function CreateOarcGuiButton(player)

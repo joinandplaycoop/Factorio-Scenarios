@@ -51,7 +51,7 @@ require("lib/separate_spawns_guis")
 
 require("lib/oarc_gui_tabs")
 
-require "japc-event-handler"
+local japcEvents = require("japc_events") -- JAPC EVENT
 
 -- Create a new surface so we can modify map settings at the start.
 GAME_SURFACE_NAME="oarc"
@@ -161,27 +161,8 @@ end)
 -- Player Events
 ----------------------------------------
 script.on_event(defines.events.on_player_joined_game, function(event)
-
-    CreateGameOptionsGui(event)
-
     PlayerJoinedMessages(event)
-
-    if global.ocfg.enable_player_list then
-        CreatePlayerListGui(event)
-    end
-
-    if global.ocfg.enable_tags then
-        CreateTagGui(event)
-    end
-
-    if global.satellite_sent then
-        CreateRocketGui(game.players[event.player_index])
-    end
-
     ServerWriteFile("player_events", game.players[event.player_index].name .. " joined the game." .. "\n")
-
-    -- Update PlayerList guis
-    PlayerListUpdateEvent()
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
@@ -212,10 +193,6 @@ end)
 script.on_event(defines.events.on_player_left_game, function(event)
     ServerWriteFile("player_events", game.players[event.player_index].name .. " left the game." .. "\n")
     FindUnusedSpawns(game.players[event.player_index], true)
-
-    -- Update Player open playerlist guis
-    PlayerListUpdateEvent()
-
 end)
 
 ----------------------------------------
@@ -311,6 +288,9 @@ script.on_event(defines.events.on_research_finished, function(event)
     if global.ocfg.enable_loaders then
         EnableLoaders(event)
     end
+
+    japcEvents.log_research_message(event, "Research finished for") -- JAPC Event
+    
 end)
 
 ----------------------------------------
