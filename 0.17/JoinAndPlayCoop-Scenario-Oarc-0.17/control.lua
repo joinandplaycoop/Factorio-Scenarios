@@ -33,6 +33,7 @@ require("lib/game_opts")
 require("lib/player_list")
 require("lib/rocket_launch")
 require("lib/admin_commands")
+require("lib/regrowth_map")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
@@ -57,6 +58,18 @@ require "japc-event-handler"
 GAME_SURFACE_NAME="oarc"
 
 
+-- I'm reverting my decision to turn the regrowth thing into a mod.
+remote.add_interface("oarc_regrowth",
+            {area_offlimits_chunkpos = MarkAreaSafeGivenChunkPos,
+            area_offlimits_tilepos = MarkAreaSafeGivenTilePos,
+            area_removal_tilepos = MarkAreaForRemoval,
+            trigger_immediate_cleanup = TriggerCleanup,
+            add_surface = RegrowthAddSurface})
+
+commands.add_command("trigger-map-cleanup",
+    "Force immediate removal of all expired chunks (unused chunk removal mod)",
+    ForceRemoveChunksCmd)
+
 --------------------------------------------------------------------------------
 -- ALL EVENT HANLDERS ARE HERE IN ONE PLACE!
 --------------------------------------------------------------------------------
@@ -69,6 +82,9 @@ script.on_init(function(event)
 
     -- FIRST
     InitOarcConfig()
+
+    -- Regrowth (always init so we can enable during play.)
+    RegrowthInit()
 
     -- Create new game surface
     CreateGameSurface()
@@ -103,6 +119,10 @@ end)
 -- Chunk Generation
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
+
+    if global.ocfg.enable_regrowth then
+        RegrowthChunkGenerate(event)
+    end
 
     if global.ocfg.enable_undecorator then
         UndecorateOnChunkGenerate(event)
@@ -226,6 +246,14 @@ script.on_event(defines.events.on_built_entity, function(event)
         Autofill(event)
     end
 
+    if global.ocfg.enable_regrowth then
+        remote.call("oarc_regrowth",
+                    "area_offlimits_tilepos",
+                    GAME_SURFACE_NAME,
+                    event.created_entity.position,
+                    2)
+    end
+
     if ENABLE_ANTI_GRIEFING then
         SetItemBlueprintTimeToLive(event)
     end
@@ -242,9 +270,15 @@ end)
 -- place items that don't count as player_built and robot_built.
 -- Specifically FARL.
 ----------------------------------------
--- script.on_event(defines.events.script_raised_built, function(event)
-
--- end)
+script.on_event(defines.events.script_raised_built, function(event)
+    if global.ocfg.enable_regrowth then
+        remote.call("oarc_regrowth",
+                    "area_offlimits_tilepos",
+                    GAME_SURFACE_NAME,
+                    event.entity.position,
+                    2)
+    end
+end)
 
 
 ----------------------------------------
@@ -252,6 +286,10 @@ end)
 -- Delayed events, delayed spawns, ...
 ----------------------------------------
 script.on_event(defines.events.on_tick, function(event)
+    if global.ocfg.enable_regrowth then
+        RegrowthOnTick()
+        RegrowthForceRemovalOnTick()
+    end
 
     DelayedSpawnOnTick()
 
@@ -262,6 +300,11 @@ script.on_event(defines.events.on_tick, function(event)
 end)
 
 
+script.on_event(defines.events.on_sector_scanned, function (event)
+    if global.ocfg.enable_regrowth then
+        RegrowthSectorScan(event)
+    end
+end)
 -- script.on_event(defines.events.on_sector_scanned, function (event)
 
 -- end)
@@ -270,6 +313,13 @@ end)
 --
 ----------------------------------------
 script.on_event(defines.events.on_robot_built_entity, function (event)
+    if global.ocfg.enable_regrowth then
+        remote.call("oarc_regrowth",
+                    "area_offlimits_tilepos",
+                    GAME_SURFACE_NAME,
+                    event.created_entity.position,
+                    2)
+    end
     if global.ocfg.frontier_rocket_silo then
         BuildSiloAttempt(event)
     end

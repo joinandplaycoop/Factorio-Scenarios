@@ -33,8 +33,9 @@ function RocketLaunchEvent(event)
         global.satellite_sent = {}
         SendBroadcastMsg("Team " .. event.rocket.force.name .. " was the first to launch a rocket!")
         ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " was the first to launch a rocket!" .. "\n")
-		log_message(event, "Team " .. event.rocket.force.name .. " was the first to launch a rocket!")
-		for name,player in pairs(game.connected_players) do
+        log_message(event, "Team " .. event.rocket.force.name .. " was the first to launch a rocket!")
+        
+		for name,player in pairs(game.players) do
 	        CreateRocketGui(player)
 	    end
     end
