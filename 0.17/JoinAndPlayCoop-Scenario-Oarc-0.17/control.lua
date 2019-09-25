@@ -181,27 +181,8 @@ end)
 -- Player Events
 ----------------------------------------
 script.on_event(defines.events.on_player_joined_game, function(event)
-
-    CreateGameOptionsGui(event)
-
     PlayerJoinedMessages(event)
-
-    if global.ocfg.enable_player_list then
-        CreatePlayerListGui(event)
-    end
-
-    if global.ocfg.enable_tags then
-        CreateTagGui(event)
-    end
-
-    if global.satellite_sent then
-        CreateRocketGui(game.players[event.player_index])
-    end
-
     ServerWriteFile("player_events", game.players[event.player_index].name .. " joined the game." .. "\n")
-
-    -- Update PlayerList guis
-    PlayerListUpdateEvent()
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
@@ -232,9 +213,6 @@ end)
 script.on_event(defines.events.on_player_left_game, function(event)
     ServerWriteFile("player_events", game.players[event.player_index].name .. " left the game." .. "\n")
     FindUnusedSpawns(game.players[event.player_index], true)
-
-    -- Update Player open playerlist guis
-    PlayerListUpdateEvent()
 
 end)
 
