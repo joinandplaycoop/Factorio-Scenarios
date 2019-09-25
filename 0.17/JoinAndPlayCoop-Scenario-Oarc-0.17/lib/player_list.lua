@@ -4,16 +4,14 @@
 --------------------------------------------------------------------------------
 -- Player List GUI - My own version
 --------------------------------------------------------------------------------
-
--- Function to update the playlist gui.  Putting this at top to call later.
--- Basically moved the guts of the expand gui function to here to call it on events.
-local function PlayerListUpdate(pframe)
-    pframe.clear()
-    local scrollFrame = pframe.add{type="scroll-pane",
-                                        name="playerList-panel",
-                                        direction = "vertical"}
+function CreatePlayerListGuiTab(tab_container, player)
+    local scrollFrame = tab_container.add{type="scroll-pane",
+                                    name="playerList-panel",
+                                    direction = "vertical"}
     ApplyStyle(scrollFrame, my_player_list_fixed_width_style)
     scrollFrame.horizontal_scroll_policy = "never"
+
+    AddLabel(scrollFrame, "online_title_msg", "Online Players:", my_label_header_style)
     for _,player in pairs(game.connected_players) do
         local caption_str = player.name.." ["..player.force.name.."]".." ("..formattime_hours_mins(player.online_time)..")"
         if (player.admin) then
@@ -25,7 +23,8 @@ local function PlayerListUpdate(pframe)
 
     -- List offline players
     if (global.ocfg.list_offline_players) then
-        AddLabel(scrollFrame, "offline_title_msg", "Offline Players:", my_label_style)
+        AddSpacerLine(scrollFrame)
+        AddLabel(scrollFrame, "offline_title_msg", "Offline Players:", my_label_header_grey_style)
         for _,player in pairs(game.players) do
             if (not player.connected) then
                 local caption_str = player.name.." ["..player.force.name.."]".." ("..formattime_hours_mins(player.online_time)..")"
@@ -34,45 +33,14 @@ local function PlayerListUpdate(pframe)
             end
         end
     end
-    local spacer = scrollFrame.add{type="label", caption="     ", name="plist_spacer_plist"}
-    ApplyStyle(spacer, my_player_list_style_spacer)
-end 
-
--- Event function we can hook to players leaving and entering.  Hooked up in control.lua
-function PlayerListUpdateEvent()
-    for _, player in pairs(game.players) do
-        local frame = mod_gui.get_frame_flow(player)["playerList-panel"]
-        if (frame) then
-            PlayerListUpdate(frame)
-        end
-    end
 end
 
-function CreatePlayerListGui(event)
-  local player = game.players[event.player_index]
-  if mod_gui.get_button_flow(player).playerList == nil then
-      mod_gui.get_button_flow(player).add{name="playerList", type="button", caption="Player List", style=mod_gui.button_style}
-  end   
-end
-
-local function ExpandPlayerListGui(player)
-    local frame = mod_gui.get_frame_flow(player)["playerList-panel"]
-    if (frame) then
-        frame.destroy()
-    else
-        local frame = mod_gui.get_frame_flow(player).add{type="frame",
-                                            name="playerList-panel",
-                                            caption="Online:"}
-        PlayerListUpdate(frame)
-    end
-end
-
-function PlayerListGuiClick(event) 
+function PlayerListGuiClick(event)
     if not (event and event.element and event.element.valid) then return end
     local player = game.players[event.element.player_index]
     local name = event.element.name
 
     if (name == "playerList") then
-        ExpandPlayerListGui(player)        
+        ExpandPlayerListGui(player)
     end
 end
