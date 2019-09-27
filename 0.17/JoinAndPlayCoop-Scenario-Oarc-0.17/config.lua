@@ -1,5 +1,5 @@
 -- example-config.lua (Rename this file to config.lua to use it)
--- Apr 2019
+-- Sep 24 2019 (updated on)
 -- Configuration Options
 -- 
 -- You should be able to leave most of the settings here as defaults.
@@ -8,21 +8,16 @@
 --------------------------------------------------------------------------------
 -- Messages
 -- You will want to change some of these to be your own.
--- Make sure SERVER_OWNER_IS_OARC = false
 --------------------------------------------------------------------------------
 
--- This stuff is printed in the console. It's probably ignored most of the time.
-WELCOME_MSG = "Join and play Coop !"
-GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
-MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill, Undecorator, Player List"
-
--- This stuff is shown in the welcome GUI. Make sure it's valid.
-WELCOME_MSG_TITLE = "Join and play Coop ! "
+-- This stuff is shown in the welcome GUI and Info panel. Make sure it's valid.
+WELCOME_MSG_TITLE = "Join and play Coop!"
+WELCOME_MSG = "Welcome to Join and play Coop, S1" -- Printed to player on join as well.
 SERVER_MSG = "Rules: Be polite. Ask before changing other players's stuff. Every hour permissions are applied\n"..
 "Here you can join the discord : discord.joinandplaycoop.com Here you can look at the status of the server status.joinandplaycoop.com"
 
 SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
-"0.17 experimental release. Tweaks to fix spawn issues / text / difficulty.\n"..
+"0.17 stable release. Regrowth back to softmod!\n"..
 "This scenario gives you and/or your friends your own starting area.\n"..
 "You can be on the main team or your own. All teams are friendly.\n"..
 "If you leave in the first 15 minutes, your base and character will be deleted!"
@@ -76,14 +71,10 @@ PLAYER_LIST_OFFLINE_PLAYERS = true -- List offline players as well.
 -- Enable shared vision between teams (all teams are COOP regardless)
 ENABLE_SHARED_TEAM_VISION = true
 
--- Enable map regrowth, see regrowth_map.lua for more info.
--- Eseentially clears up map area that was explored but not used every hour.
--- Helps reduce save file size.
-ENABLE_REGROWTH = false
+-- Cleans up unused chunks periodically. Helps keep map size down.
+ENABLE_REGROWTH = true
 
--- If you have regrowth enabled, this should also be enabled.
--- It removes bases for players that join and leave the game quickly.
--- This can also be used without enabling regrowth.
+-- Only works if you have the Unused Chunk Removal mod installed.
 ENABLE_ABANDONED_BASE_REMOVAL = true
 
 -- Enable the new 0.17 research queue by default for all forces.
@@ -110,10 +101,6 @@ LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = false
 -- No behemoth worms everywhere just because you spawned far away.
 -- If you're trying out the vanilla spawning, you might want to disable this.
 OARC_MODIFIED_ENEMY_SPAWNING = true
-
---------------------------------------------------------------------------------
--- Spawn Options
---------------------------------------------------------------------------------
 
 ---------------------------------------
 -- Starting Items
@@ -352,7 +339,7 @@ MAIN_FORCE = "Main Force"
 -- Enable if players can allow others to join their base.
 -- And specify how many including the host are allowed.
 ENABLE_SHARED_SPAWNS = true
-MAX_PLAYERS_AT_SHARED_SPAWN = 0
+MAX_PLAYERS_AT_SHARED_SPAWN = 3
 
 -- Share local team chat with all teams
 -- This makes it so you don't have to use /s
@@ -420,8 +407,17 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 -- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)
 -- These things were added from other people's requests/changes and are disabled by default.
 --------------------------------------------------------------------------------
--- Enable this to disable some basic things like friendly fire, deconstructing from map view, etc.
-ENABLE_ANTI_GRIEFING = true
+-- Enable this to disable deconstructing from map view, and setting a time limit
+-- on ghost placements.
+ENABLE_ANTI_GRIEFING = false
 
 -- Makes blueprint ghosts dissapear if they have been placed longer than this
-GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
+-- ONLY has an effect if ENABLE_ANTI_GRIEFING is true!
+GHOST_TIME_TO_LIVE = 10 * TICKS_PER_MINUTE
+
+--------------------------------------------------------------------------------
+-- This turns on writing chat and certain events to specific files so that I can
+-- use that for discord integration. I suggest you leave this off unless you
+-- know what you are doing.
+--------------------------------------------------------------------------------
+ENABLE_SERVER_WRITE_FILES = false

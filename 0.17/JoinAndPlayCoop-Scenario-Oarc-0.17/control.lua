@@ -2,12 +2,12 @@
 -- Mar 2019
 
 -- Oarc's Separated Spawn Scenario
--- 
+--
 -- I wanted to create a scenario that allows you to spawn in separate locations
 -- From there, I ended up adding a bunch of other minor/major features
--- 
+--
 -- Credit:
---  Tags - Taken from WOGs scenario 
+--  Tags - Taken from WOGs scenario
 --  Rocket Silo - Taken from Frontier as an idea
 --
 -- Feel free to re-use anything you want. It would be nice to give me credit
@@ -30,10 +30,10 @@ require("lib/oarc_utils")
 require("lib/frontier_silo")
 require("lib/tag")
 require("lib/game_opts")
-require("lib/regrowth_map")
 require("lib/player_list")
 require("lib/rocket_launch")
 require("lib/admin_commands")
+require("lib/regrowth_map")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
@@ -50,17 +50,32 @@ require("lib/oarc_global_cfg.lua")
 require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
 
+require("lib/oarc_gui_tabs")
+
 require "japc-event-handler"
 
 -- Create a new surface so we can modify map settings at the start.
 GAME_SURFACE_NAME="oarc"
+
+
+-- I'm reverting my decision to turn the regrowth thing into a mod.
+remote.add_interface("oarc_regrowth",
+            {area_offlimits_chunkpos = MarkAreaSafeGivenChunkPos,
+            area_offlimits_tilepos = MarkAreaSafeGivenTilePos,
+            area_removal_tilepos = MarkAreaForRemoval,
+            trigger_immediate_cleanup = TriggerCleanup,
+            add_surface = RegrowthAddSurface})
+
+commands.add_command("trigger-map-cleanup",
+    "Force immediate removal of all expired chunks (unused chunk removal mod)",
+    ForceRemoveChunksCmd)
 
 --------------------------------------------------------------------------------
 -- ALL EVENT HANLDERS ARE HERE IN ONE PLACE!
 --------------------------------------------------------------------------------
 
 ----------------------------------------
--- On Init - only runs once the first 
+-- On Init - only runs once the first
 --   time the game starts
 ----------------------------------------
 script.on_init(function(event)
@@ -68,14 +83,14 @@ script.on_init(function(event)
     -- FIRST
     InitOarcConfig()
 
+    -- Regrowth (always init so we can enable during play.)
+    RegrowthInit()
+
     -- Create new game surface
     CreateGameSurface()
 
     -- MUST be before other stuff, but after surface creation.
     InitSpawnGlobalsAndForces()
-
-    -- Regardless of whether it's enabled or not, it's good to have this init.
-    OarcRegrowthInit()
 
     -- Frontier Silo Area Generation
     if (global.ocfg.frontier_rocket_silo) then
@@ -106,7 +121,7 @@ end)
 script.on_event(defines.events.on_chunk_generated, function(event)
 
     if global.ocfg.enable_regrowth then
-        OarcRegrowthChunkGenerate(event.area.left_top)
+        RegrowthChunkGenerate(event)
     end
 
     if global.ocfg.enable_undecorator then
@@ -127,6 +142,10 @@ end)
 -- Gui Click
 ----------------------------------------
 script.on_event(defines.events.on_gui_click, function(event)
+
+    -- Don't interfere with other mod related stuff.
+    if (event.element.get_mod() ~= nil) then return end
+
     if global.ocfg.enable_tags then
         TagGuiClick(event)
     end
@@ -144,8 +163,9 @@ script.on_event(defines.events.on_gui_click, function(event)
     BuddySpawnRequestMenuClick(event)
     SharedSpawnJoinWaitMenuClick(event)
 
+    ClickOarcGuiButton(event)
+
     GameOptionsGuiClick(event)
-    RocketGuiClick(event)
 end)
 
 script.on_event(defines.events.on_gui_checked_state_changed, function (event)
@@ -153,51 +173,36 @@ script.on_event(defines.events.on_gui_checked_state_changed, function (event)
     SpawnCtrlGuiOptionsSelect(event)
 end)
 
+script.on_event(defines.events.on_gui_selected_tab_changed, function (event)
+    TabChangeOarcGui(event)
+end)
 
 ----------------------------------------
 -- Player Events
 ----------------------------------------
 script.on_event(defines.events.on_player_joined_game, function(event)
-
-    CreateGameOptionsGui(event)
-
     PlayerJoinedMessages(event)
-
-    if global.ocfg.enable_player_list then
-        CreatePlayerListGui(event)
-    end
-
-    if global.ocfg.enable_tags then
-        CreateTagGui(event)
-    end
-
-    if global.satellite_sent then
-        CreateRocketGui(game.players[event.player_index])
-    end
-
     ServerWriteFile("player_events", game.players[event.player_index].name .. " joined the game." .. "\n")
-
-    -- Update PlayerList guis
-    PlayerListUpdateEvent()
-    
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
-    
+    local player = game.players[event.player_index]
+
     -- Move the player to the game surface immediately.
-    -- May change this to Lobby in the future.
-    game.players[event.player_index].teleport({x=0,y=0}, GAME_SURFACE_NAME)
+    player.teleport({x=0,y=0}, GAME_SURFACE_NAME)
 
     if global.ocfg.enable_long_reach then
-        GivePlayerLongReach(game.players[event.player_index])
+        GivePlayerLongReach(player)
     end
 
     SeparateSpawnsPlayerCreated(event.player_index)
+
+    InitOarcGuiTabs(player)
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
     SeparateSpawnsPlayerRespawned(event)
-   
+
     PlayerRespawnItems(event)
 
     if global.ocfg.enable_long_reach then
@@ -208,9 +213,6 @@ end)
 script.on_event(defines.events.on_player_left_game, function(event)
     ServerWriteFile("player_events", game.players[event.player_index].name .. " left the game." .. "\n")
     FindUnusedSpawns(game.players[event.player_index], true)
-
-    -- Update Player open playerlist guis
-    PlayerListUpdateEvent()
 
 end)
 
@@ -223,7 +225,11 @@ script.on_event(defines.events.on_built_entity, function(event)
     end
 
     if global.ocfg.enable_regrowth then
-        OarcRegrowthOffLimits(event.created_entity.position, 2)
+        remote.call("oarc_regrowth",
+                    "area_offlimits_tilepos",
+                    GAME_SURFACE_NAME,
+                    event.created_entity.position,
+                    2)
     end
 
     if ENABLE_ANTI_GRIEFING then
@@ -233,6 +239,7 @@ script.on_event(defines.events.on_built_entity, function(event)
     if global.ocfg.frontier_rocket_silo then
         BuildSiloAttempt(event)
     end
+
 end)
 
 
@@ -243,22 +250,23 @@ end)
 ----------------------------------------
 script.on_event(defines.events.script_raised_built, function(event)
     if global.ocfg.enable_regrowth then
-        OarcRegrowthOffLimits(event.entity.position, 2)
+        remote.call("oarc_regrowth",
+                    "area_offlimits_tilepos",
+                    GAME_SURFACE_NAME,
+                    event.entity.position,
+                    2)
     end
 end)
 
 
 ----------------------------------------
 -- On tick events. Stuff that needs to happen at regular intervals.
--- Delayed events, delayed spawns, regrowth logic...
+-- Delayed events, delayed spawns, ...
 ----------------------------------------
 script.on_event(defines.events.on_tick, function(event)
     if global.ocfg.enable_regrowth then
-        OarcRegrowthOnTick()
-    end
-
-    if global.ocfg.enable_abandoned_base_removal then
-        OarcRegrowthForceRemovalOnTick()
+        RegrowthOnTick()
+        RegrowthForceRemovalOnTick()
     end
 
     DelayedSpawnOnTick()
@@ -272,36 +280,28 @@ end)
 
 script.on_event(defines.events.on_sector_scanned, function (event)
     if global.ocfg.enable_regrowth then
-        OarcRegrowthSectorScan(event)
+        RegrowthSectorScan(event)
     end
 end)
+-- script.on_event(defines.events.on_sector_scanned, function (event)
+
+-- end)
 
 ----------------------------------------
--- Refreshes regrowth timers around an active timer
--- Refresh areas where stuff is built, and mark any chunks with player
--- built stuff as permanent.
+--
 ----------------------------------------
 script.on_event(defines.events.on_robot_built_entity, function (event)
     if global.ocfg.enable_regrowth then
-        OarcRegrowthOffLimits(event.created_entity.position, 2)
+        remote.call("oarc_regrowth",
+                    "area_offlimits_tilepos",
+                    GAME_SURFACE_NAME,
+                    event.created_entity.position,
+                    2)
     end
-
     if global.ocfg.frontier_rocket_silo then
         BuildSiloAttempt(event)
     end
 end)
-
--- I disabled this because it's too much overhead for too little gain!
--- script.on_event(defines.events.on_player_mined_entity, function(event)
---     if global.ocfg.enable_regrowth then
---         OarcRegrowthCheckChunkEmpty(event)
---     end
--- end)
--- script.on_event(defines.events.on_robot_mined_entity, function(event)
---     if global.ocfg.enable_regrowth then
---         OarcRegrowthCheckChunkEmpty(event)
---     end
--- end)
 
 
 ----------------------------------------
@@ -324,13 +324,13 @@ end)
 -- This is where you can permanently remove researched techs
 ----------------------------------------
 script.on_event(defines.events.on_research_finished, function(event)
-    
+
     -- Never allows players to build rocket-silos in "frontier" mode.
     if global.ocfg.frontier_rocket_silo and not global.ocfg.frontier_allow_build then
         RemoveRecipe(event.research.force, "rocket-silo")
     end
 
-    if global.ocfg.lock_goodies_rocket_launch and 
+    if global.ocfg.lock_goodies_rocket_launch and
         (not global.satellite_sent or not global.satellite_sent[event.research.force.name]) then
         RemoveRecipe(event.research.force, "productivity-module-3")
         RemoveRecipe(event.research.force, "speed-module-3")
