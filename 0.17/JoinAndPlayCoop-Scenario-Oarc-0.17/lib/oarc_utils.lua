@@ -226,7 +226,7 @@ function ShareChatBetweenForces(player, msg)
                 (force.name ~= neutral) and
                 (force.name ~= player) and
                 (force ~= player.force)) then
-                force.print(player.name..": "..msg)
+                force.print(player.name..": "..msg, player.chat_color)
             end
         end
     end
