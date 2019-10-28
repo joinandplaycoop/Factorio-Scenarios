@@ -36,8 +36,8 @@ function RocketLaunchEvent(event)
         log_message(event, "Team " .. event.rocket.force.name .. " was the first to launch a rocket!")
         
 		for name,player in pairs(game.players) do
-	        CreateRocketGui(player)
-	    end
+            SetOarcGuiTabEnabled(player, OARC_ROCKETS_GUI_TAB_NAME, true)
+        end
     end
 
     -- Track additional satellites launched by this force
@@ -68,48 +68,21 @@ function RocketLaunchEvent(event)
 		    end
         end
     end
-
-    -- If Rocket panel is open, refresh rocket count.
-    for name,player in pairs(game.connected_players) do
-        local frame = player.gui.left["rocket-panel"]
-        if (frame) then
-            frame.clear()
-            for force_name,sat_count in pairs(global.satellite_sent) do
-                frame.add{name="rc_"..force_name, type = "label",
-                            caption="Team " .. force_name .. ": " .. tostring(sat_count)}
-            end
-        end
-    end
 end
 
+function CreateRocketGuiTab(tab_container, player)
+    -- local frame = tab_container.add{type="frame", name="rocket-panel", caption="Satellites Launched:", direction = "vertical"}
 
-function CreateRocketGui(player)
-    if mod_gui.get_button_flow(player)["rocket-score"] == nil then
-        mod_gui.get_button_flow(player).add{name="rocket-score", type="button", caption="Rockets", style=mod_gui.button_style}
-    end   
-end
+    AddLabel(tab_container, nil, "Satellites Launched:", my_label_header_style)
 
-
-local function ExpandRocketGui(player)
-    local frame = player.gui.left["rocket-panel"]
-    if (frame) then
-        frame.destroy()
+    if (global.satellite_sent == nil) then
+        AddLabel(tab_container, nil, "No launches yet.", my_label_style)
     else
-        local frame = player.gui.left.add{type="frame", name="rocket-panel", caption="Satellites Launched:", direction = "vertical"}
-
         for force_name,sat_count in pairs(global.satellite_sent) do
-        	frame.add{name="rc_"..force_name, type = "label",
-    					caption="Team " .. force_name .. ": " .. tostring(sat_count)}
+            AddLabel(tab_container,
+                    "rc_"..force_name,
+                    "Team " .. force_name .. ": " .. tostring(sat_count),
+                    my_label_style)
         end
-    end
-end
-
-function RocketGuiClick(event) 
-    if not (event and event.element and event.element.valid) then return end
-    local player = game.players[event.element.player_index]
-    local name = event.element.name
-
-    if (name == "rocket-score") then
-        ExpandRocketGui(player)        
     end
 end
