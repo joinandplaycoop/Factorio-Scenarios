@@ -45,8 +45,10 @@ function RocketLaunchEvent(event)
         global.satellite_sent[force.name] = global.satellite_sent[force.name] + 1   
         SendBroadcastMsg("Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name])
         ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name] .. "\n")
-		log_message(event, "Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name])
-
+        -- Lets only send server notifications every 25 rockets after first 25 launched.
+        if global.satellite_sent[force.name] < 25 or global.satellite_sent[force.name] % 25 == 0 then
+		    log_message(event, "Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name])
+        end
     -- First sat launch for this force.
     else
         -- game.set_game_state{game_finished=true, player_won=true, can_continue=true}
