@@ -12,7 +12,7 @@
 
 -- This stuff is shown in the welcome GUI and Info panel. Make sure it's valid.
 WELCOME_MSG_TITLE = "Join and play Coop!"
-WELCOME_MSG = "Welcome to Join and play Coop, S1" -- Printed to player on join as well.
+WELCOME_MSG = "Welcome to Join and play Coop !" -- Printed to player on join as well.
 SERVER_MSG = "Rules: Be polite. Ask before changing other players's stuff. Every hour permissions are applied\n"..
 "Here you can join the discord : discord.joinandplaycoop.com Here you can look at the status of the server status.joinandplaycoop.com"
 
