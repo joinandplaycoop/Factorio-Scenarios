@@ -172,7 +172,7 @@ function BuildSiloAttempt(event)
     local epos = event.created_entity.position
 
     for k,v in pairs(global.siloPosition) do
-        if (getDistance(epos, v) < 5) then
+        if (getDistance(epos, v) < 10) then
             SendBroadcastMsg("Rocket silo has been built!")
             return
         end
