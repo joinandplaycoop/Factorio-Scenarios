@@ -10,7 +10,7 @@ local function log_player_message(event, msg_in)
 end
 
 local function log_player_death_message(event, msg_in)
-    local cs = event.cause.name
+    if event.cause then cs = event.cause.name else cs = 'something else' end
     local msg = "" .. game.players[event.player_index].name .. " has been killed by " .. cs .. "!"
     log_message(event, msg)
     -- game.write_file("server.log", msg .. "\n", true)
