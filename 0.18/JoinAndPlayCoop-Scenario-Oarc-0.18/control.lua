@@ -52,7 +52,8 @@ require("lib/separate_spawns_guis")
 
 require("lib/oarc_gui_tabs")
 
-require "japc-event-handler"
+-- compatibility with mods
+require("compat/factoriomaps")
 
 -- Create a new surface so we can modify map settings at the start.
 GAME_SURFACE_NAME="oarc"
@@ -101,6 +102,12 @@ script.on_init(function(event)
     global.vanillaSpawns = FYShuffle(global.vanillaSpawns)
     log("Vanilla spawns:")
     log(serpent.block(global.vanillaSpawns))
+
+    Compat.handle_factoriomaps()
+end)
+
+script.on_load(function()
+	Compat.handle_factoriomaps()
 end)
 
 
@@ -123,7 +130,6 @@ script.on_event(defines.events.on_chunk_generated, function(event)
     if global.ocfg.enable_regrowth then
         RegrowthChunkGenerate(event)
     end
-
     if global.ocfg.enable_undecorator then
         UndecorateOnChunkGenerate(event)
     end
@@ -213,7 +219,6 @@ end)
 script.on_event(defines.events.on_player_left_game, function(event)
     ServerWriteFile("player_events", game.players[event.player_index].name .. " left the game." .. "\n")
     FindUnusedSpawns(game.players[event.player_index], true)
-
 end)
 
 ----------------------------------------
@@ -326,6 +331,7 @@ script.on_event(defines.events.on_player_built_tile, function (event)
         end
     end
 end)
+
 
 
 
