@@ -11,7 +11,7 @@
     <img src="https://discordapp.com/api/guilds/420865611279630336/widget.png?style=shield" alt="Discord">
   </a>
 </p>
-<h2 align="center">Join and Play Coop repository</h2>
+<h2 align="center">Join and Play Coop scenario repository</h2>
 
 
 
