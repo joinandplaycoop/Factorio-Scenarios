@@ -118,11 +118,9 @@ function TeleportPlayer( player )
             end
         end
 
-        -- Check for entities that player could collide with and get stuck.
-        dest = FindNonCollidingPosition(dest)
-
         -- TODO. transport anyone in the vicinity as well 
         if dest ~= nil then
+            dest = FindNonCollidingPosition(dest)
             player.driving=false;
             player.teleport(dest);
         else
