@@ -121,11 +121,12 @@ function TeleportPlayer( player )
         -- TODO. transport anyone in the vicinity as well 
         if dest ~= nil then
             dest = FindNonCollidingPosition(dest)
+            if dest == nil then
+                player.print("Error.  No clear place to teleport to.");
+                return
+            end
             player.driving=false;
             player.teleport(dest);
-        else
-            --find_non_colliding_position can return nil if no position found
-            player.print("Error.  No clear place to teleport to.");
         end
     end
 end
