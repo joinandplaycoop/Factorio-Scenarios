@@ -87,7 +87,7 @@ scenario.config.bots = {
 }
 
 scenario.config.playerBonus = {
-    character_crafting_speed_modifier = 0,  -- Regular: 0, Slow: 1.0/10-1.0
+    character_crafting_speed_modifier = 0,  -- Regular: 0, 10x slower: 1.0/10-1.0
 }
 
 scenario.config.silo = {
