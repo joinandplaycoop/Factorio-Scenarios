@@ -104,6 +104,7 @@ script.on_init(function(event)
     log(serpent.block(global.vanillaSpawns))
 
     Compat.handle_factoriomaps()
+
 end)
 
 script.on_load(function()
@@ -189,6 +190,7 @@ end)
 script.on_event(defines.events.on_player_joined_game, function(event)
     PlayerJoinedMessages(event)
     ServerWriteFile("player_events", game.players[event.player_index].name .. " joined the game." .. "\n")
+	
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
@@ -355,11 +357,18 @@ end)
 -- This is where you can permanently remove researched techs
 ----------------------------------------
 script.on_event(defines.events.on_research_finished, function(event)
-
-    -- Never allows players to build rocket-silos in "frontier" mode.
-    if global.ocfg.frontier_rocket_silo and not global.ocfg.frontier_allow_build then
 		RemoveRecipe(event.research.force, "construction-robot")
 		RemoveRecipe(event.research.force, "logistic-robot")
+		RemoveRecipe(event.research.force, "logistic-chest-active-provider")
+		RemoveRecipe(event.research.force, "logistic-chest-buffer")
+		RemoveRecipe(event.research.force, "logistic-chest-passive-provider")
+		RemoveRecipe(event.research.force, "logistic-chest-requester")
+		RemoveRecipe(event.research.force, "logistic-chest-storage")
+		RemoveRecipe(event.research.force, "roboport")
+		RemoveRecipe(event.research.force, "burner-mining-drill")
+		RemoveRecipe(event.research.force, "electric-mining-drill")
+    -- Never allows players to build rocket-silos in "frontier" mode.
+    if global.ocfg.frontier_rocket_silo and not global.ocfg.frontier_allow_build then
         RemoveRecipe(event.research.force, "rocket-silo")
     end
 

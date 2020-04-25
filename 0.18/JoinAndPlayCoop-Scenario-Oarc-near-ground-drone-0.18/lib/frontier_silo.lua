@@ -190,7 +190,6 @@ function BuildSiloAttempt(event)
         log("ERROR! Rocket-silo had no valid last user?!?!")
     end
 end
-
 -- Generate clean land and trees around silo area on chunk generate event
 function GenerateRocketSiloChunk(event)
 
