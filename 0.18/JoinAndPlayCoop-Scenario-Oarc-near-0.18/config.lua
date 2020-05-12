@@ -144,8 +144,8 @@ CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS = 10
 
 -- Near Distance in chunks
 -- When a player selects "near" spawn, they will be in or as close to this range as possible.
-NEAR_MIN_DIST = 0
-NEAR_MAX_DIST = 25
+NEAR_MIN_DIST = 10
+NEAR_MAX_DIST = 50
 
 -- Far Distance in chunks
 -- When a player selects "far" spawn, they will be at least this distance away.
@@ -211,7 +211,7 @@ OARC_CFG = {
 
         -- Warning area has significantly reduced aliens
         -- This is the radius in tiles of warning area.
-        warn_radius = CHUNK_SIZE*30,
+        warn_radius = CHUNK_SIZE*20,
 
         -- 1 : X (spawners alive : spawners destroyed) in this area
         warn_reduction = 40,
