@@ -331,7 +331,7 @@ OARC_CFG = {
 -- Separate teams
 -- This allows you to join your own force/team. Everyone is still COOP/PvE, all
 -- teams are friendly and cease-fire.
-ENABLE_SEPARATE_TEAMS = true
+ENABLE_SEPARATE_TEAMS = false
 
 -- Main force is what default players join
 MAIN_FORCE = "Main Force"
