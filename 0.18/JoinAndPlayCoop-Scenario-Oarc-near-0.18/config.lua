@@ -365,7 +365,7 @@ MIN_ONLINE_TIME_IN_MINUTES = 15
 SILO_NUM_SPAWNS = 3
 
 -- How many chunks away from the center of the map should the silo be spawned
-SILO_CHUNK_DISTANCE = 40
+SILO_CHUNK_DISTANCE = 70
 
 -- If this is enabled, you get silos at the positions specified below.
 -- (The other settings above are ignored in this case.)
