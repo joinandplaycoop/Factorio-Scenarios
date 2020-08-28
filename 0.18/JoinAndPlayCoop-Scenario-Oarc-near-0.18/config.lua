@@ -1,5 +1,5 @@
 -- example-config.lua (Rename this file to config.lua to use it)
--- Sep 24 2019 (updated on)
+-- Aug 28 2020 (updated on)
 -- Configuration Options
 -- 
 -- You should be able to leave most of the settings here as defaults.
@@ -140,12 +140,12 @@ PLAYER_RESPAWN_START_ITEMS = {
 -- chunks. It ensures the spawn area isn't too near generated/explored/existing
 -- area. The larger you make this, the further away players will spawn from 
 -- generated map area (even if it is not visible on the map!).
-CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS = 10
+CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS = 15
 
 -- Near Distance in chunks
 -- When a player selects "near" spawn, they will be in or as close to this range as possible.
-NEAR_MIN_DIST = 10
-NEAR_MAX_DIST = 50
+NEAR_MIN_DIST = 20
+NEAR_MAX_DIST = 70
 
 -- Far Distance in chunks
 -- When a player selects "far" spawn, they will be at least this distance away.
@@ -214,7 +214,7 @@ OARC_CFG = {
         warn_radius = CHUNK_SIZE*20,
 
         -- 1 : X (spawners alive : spawners destroyed) in this area
-        warn_reduction = 40,
+        warn_reduction = 30,
 
         -- Danger area has slightly reduce aliens
         -- This is the radius in tiles of danger area.
@@ -365,7 +365,7 @@ MIN_ONLINE_TIME_IN_MINUTES = 15
 SILO_NUM_SPAWNS = 3
 
 -- How many chunks away from the center of the map should the silo be spawned
-SILO_CHUNK_DISTANCE = 70
+SILO_CHUNK_DISTANCE = 130
 
 -- If this is enabled, you get silos at the positions specified below.
 -- (The other settings above are ignored in this case.)
