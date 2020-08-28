@@ -207,21 +207,21 @@ OARC_CFG = {
     {
         -- Safe area has no aliens
         -- This is the radius in tiles of safe area.
-        safe_radius = CHUNK_SIZE*20,
+        safe_radius = CHUNK_SIZE*15,
 
         -- Warning area has significantly reduced aliens
         -- This is the radius in tiles of warning area.
-        warn_radius = CHUNK_SIZE*20,
+        warn_radius = CHUNK_SIZE*10,
 
         -- 1 : X (spawners alive : spawners destroyed) in this area
-        warn_reduction = 30,
+        warn_reduction = 25,
 
         -- Danger area has slightly reduce aliens
         -- This is the radius in tiles of danger area.
-        danger_radius = CHUNK_SIZE*50,
+        danger_radius = CHUNK_SIZE*40,
 
         -- 1 : X (spawners alive : spawners destroyed) in this area
-        danger_reduction = 5,
+        danger_reduction = 4,
     },
 
     -- Location of water strip (horizontal)
