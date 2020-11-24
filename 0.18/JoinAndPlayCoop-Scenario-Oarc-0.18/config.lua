@@ -80,9 +80,31 @@ ENABLE_ABANDONED_BASE_REMOVAL = true
 -- Enable the new 0.17 research queue by default for all forces.
 ENABLE_RESEARCH_QUEUE = true
 
--- Lock power armor mk2, atomic bombs and artillery until you launch a rocket.
--- Also lock speed/prod module-3s
-LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = false
+-- Enable item & energy sharing system.
+ENABLE_CHEST_SHARING = true
+
+-- This inhibits enemy attacks on bases where all players are offline.
+-- Not 100% guaranteed.
+ENABLE_OFFLINE_PROTECTION = true
+
+-- This allows you to set the tech price multiplier for the game, but 
+-- have it only affect the main force. We just pad all non-main forces lab prod bonus.
+-- This has no effect unless the tech multiplier is more than 1!
+ENABLE_FORCE_LAB_PROD_BONUS = true
+
+-- Lock various recipes and technologies behind a rocket launch.
+-- Each team/force must launch their own rocket to unlock this!
+LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = true
+LOCKED_TECHNOLOGIES = {
+    {t="atomic-bomb"},{t="power-armor-mk2"},{t="artillery"}
+}
+LOCKED_RECIPES = {
+    {r="productivity-module-3"},{r="speed-module-3"}
+}
+
+-- Give cheaty items on start.
+ENABLE_POWER_ARMOR_QUICK_START = false
+ENABLE_MODULAR_ARMOR_QUICK_START = true
 
 --------------------------------------------------------------------------------
 -- MAP CONFIGURATION OPTIONS
@@ -109,9 +131,11 @@ OARC_MODIFIED_ENEMY_SPAWNING = true
 PLAYER_SPAWN_START_ITEMS = {
     {name="pistol", count=1},
     {name="firearm-magazine", count=200},
-    {name="iron-plate", count=16},
-    {name="burner-mining-drill", count = 2},
-    {name="stone-furnace", count = 2},
+    {name="iron-plate", count=100},
+    {name="burner-mining-drill", count = 4},
+    {name="stone-furnace", count = 4},
+    {name="coal", count = 50},
+    {name="stone", count = 50},
     -- {name="iron-plate", count=20},
     -- {name="burner-mining-drill", count = 1},
     -- {name="stone-furnace", count = 1},
@@ -239,7 +263,7 @@ OARC_CFG = {
         -- Only works for resource_tiles at the moment, not oil patches/water.
         enabled = true,
         -- Distance from center of spawn that resources are placed.
-        radius = 44,
+        radius = 45,
         -- At what angle (in radians) do resources start.
         -- 0 means starts directly east.
         -- Resources are placed clockwise from there.
