@@ -94,7 +94,7 @@ ENABLE_FORCE_LAB_PROD_BONUS = true
 
 -- Lock various recipes and technologies behind a rocket launch.
 -- Each team/force must launch their own rocket to unlock this!
-LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = true
+LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = false
 LOCKED_TECHNOLOGIES = {
     {t="atomic-bomb"},{t="power-armor-mk2"},{t="artillery"}
 }
