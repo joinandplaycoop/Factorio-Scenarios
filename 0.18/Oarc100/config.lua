@@ -79,7 +79,7 @@ ENABLE_COIN_SHOP = true
 ENABLE_ITEM_AND_ENERGY_SHARING = true -- REQUIRES ENABLE_COIN_SHOP=true!
 
 -- Enable magic chunks around the map that let you buy powerful factories that smelt/assemble/process very very quickly.
-ENABLE_MAGIC_FACTORIES = true -- REQUIRES ENABLE_COIN_SHOP=true!
+ENABLE_MAGIC_FACTORIES = false -- REQUIRES ENABLE_COIN_SHOP=true!
 
 -- This inhibits enemy attacks on bases where all players are offline.
 -- Not 100% guaranteed.
@@ -320,7 +320,7 @@ OARC_CFG = {
         ["crude-oil"] =
         {
             num_patches = 2,
-            amount = 900000,
+            amount = 1800000,
             x_offset_start = -3,
             y_offset_start = 48,
             x_offset_next = 6,
@@ -336,7 +336,7 @@ OARC_CFG = {
 -- Separate teams
 -- This allows you to join your own force/team. Everyone is still COOP/PvE, all
 -- teams are friendly and cease-fire.
-ENABLE_SEPARATE_TEAMS = true
+ENABLE_SEPARATE_TEAMS = false
 
 -- Main force is what default players join
 MAIN_FORCE = "Main Force"
@@ -387,13 +387,13 @@ ENABLE_SILO_VISION = true
 
 -- Add beacons around the silo (Philip's mod)
 ENABLE_SILO_BEACONS = false
-ENABLE_SILO_RADAR = false
+ENABLE_SILO_RADAR = true
 
 -- Allow silos to be built by the player, but forces them to build in
 -- the fixed locations. If this is false, silos are built and assigned
 -- only to the main force. This can cause a problem for non main forces
 -- when playing with LOCK_GOODIES_UNTIL_ROCKET_LAUNCH enabled.
-ENABLE_SILO_PLAYER_BUILD = true
+ENABLE_SILO_PLAYER_BUILD = false
 
 
 --------------------------------------------------------------------------------
@@ -401,7 +401,7 @@ ENABLE_SILO_PLAYER_BUILD = true
 --------------------------------------------------------------------------------
 BUILD_DIST_BONUS = 64
 REACH_DIST_BONUS = BUILD_DIST_BONUS
-RESOURCE_DIST_BONUS = 2
+RESOURCE_DIST_BONUS = 7
 
 --------------------------------------------------------------------------------
 -- Autofill Options
@@ -456,4 +456,4 @@ SILO_ISLANDS_MODE = false
 
 -- This is part of regrowth, and if both are enabled, any chunks which aren't active and have no entities will
 -- eventually be deleted over time. DO NOT USE THIS WITH MODS!
-ENABLE_WORLD_EATER = false 
+ENABLE_WORLD_EATER = true

@@ -299,7 +299,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
 
     crash_site.create_crash_site(game.surfaces[GAME_SURFACE_NAME],
                                 {x=delayedSpawn.pos.x+15, y=delayedSpawn.pos.y-25},
-                                {["spidertron"] = 1,
+                                {--["spidertron"] = 1,
                                  ["electronic-circuit"] = math.random(100,200),
                                  ["iron-gear-wheel"] = math.random(50,100),
                                  ["copper-cable"] = math.random(100,200),
