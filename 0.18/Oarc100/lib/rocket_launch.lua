@@ -6,6 +6,12 @@
 require("lib/oarc_utils")
 require("config")
 
+-- JAPC message handler
+local function log_message(event, msg)
+    print("[JAPC-EVENT-HANDLE] " .. msg)
+    -- game.write_file("server.log", msg .. "\n", true)
+end
+
 --------------------------------------------------------------------------------
 -- Rocket Launch Event Code
 -- Controls the "win condition"
@@ -26,6 +32,7 @@ function RocketLaunchEvent(event)
         global.ocore.satellite_sent = {}
         SendBroadcastMsg("Team " .. force.name .. " was the first to launch a rocket!")
         ServerWriteFile("rocket_events", "Team " .. force.name .. " was the first to launch a rocket!" .. "\n")
+        log_message(event, "Team " .. event.rocket.force.name .. " was the first to launch a rocket!")
 
         for name,player in pairs(game.players) do
             SetOarcGuiTabEnabled(player, OARC_ROCKETS_GUI_TAB_NAME, true)
@@ -37,6 +44,10 @@ function RocketLaunchEvent(event)
         global.ocore.satellite_sent[force.name] = global.ocore.satellite_sent[force.name] + 1
         SendBroadcastMsg("Team " .. force.name .. " launched another rocket. Total " .. global.ocore.satellite_sent[force.name])
         ServerWriteFile("rocket_events", "Team " .. force.name .. " launched another rocket. Total " .. global.ocore.satellite_sent[force.name] .. "\n")
+        -- Lets only send server notifications every 25 rockets after first 25 launched.
+        if global.satellite_sent[force.name] < 25 or global.satellite_sent[force.name] % 25 == 0 then
+            log_message(event, "Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name])
+        end
 
     -- First sat launch for this force.
     else
@@ -44,7 +55,7 @@ function RocketLaunchEvent(event)
         global.ocore.satellite_sent[force.name] = 1
         SendBroadcastMsg("Team " .. force.name .. " launched their first rocket!")
         ServerWriteFile("rocket_events", "Team " .. force.name .. " launched their first rocket!" .. "\n")
-
+        log_message(event, "Team " .. event.rocket.force.name .. " launched their first rocket!")
         -- Unlock research and recipes
         if global.ocfg.lock_goodies_rocket_launch then
             for _,v in ipairs(LOCKED_TECHNOLOGIES) do
