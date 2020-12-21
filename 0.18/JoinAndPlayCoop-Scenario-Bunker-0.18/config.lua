@@ -423,7 +423,7 @@ MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN = 3
 -- 
 -- Set this to zero for infinite ghosts
 ---------------------------------------
-GHOST_TIME_TO_LIVE = 20 * TICKS_PER_MINUTE
+GHOST_TIME_TO_LIVE = 0 -- 20 * TICKS_PER_MINUTE
 
 ---------------------------------------
 -- Special Action Cooldowns
