@@ -385,7 +385,7 @@ ENABLE_SILO_VISION = true
 
 -- Add beacons around the silo (Philip's mod)
 ENABLE_SILO_BEACONS = false
-ENABLE_SILO_RADAR = true
+ENABLE_SILO_RADAR = false
 
 -- Allow silos to be built by the player, but forces them to build in
 -- the fixed locations. If this is false, silos are built and assigned
