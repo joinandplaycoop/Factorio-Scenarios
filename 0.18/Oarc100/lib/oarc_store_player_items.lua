@@ -67,26 +67,26 @@ OARC_STORE_PLAYER_ITEMS =
     },
 
     ["Bot Equipment"] = {
-        ["personal-roboport-equipment"] = {cost = 100, count = 1, play_time_locked=false},
-        ["personal-roboport-mk2-equipment"] = {cost = 500, count = 1, play_time_locked=false},
-        ["construction-robot"] = {cost = 100, count = 10, play_time_locked=false},
+        ["personal-roboport-equipment"] = {cost = 500, count = 1, play_time_locked=false},
+        ["personal-roboport-mk2-equipment"] = {cost = 1000, count = 1, play_time_locked=false},
+        ["construction-robot"] = {cost = 300, count = 10, play_time_locked=false},
         ["roboport"] = {cost = 1000, count = 1, play_time_locked=false},
         ["logistic-chest-storage"] = {cost = 100, count = 1, play_time_locked=false},
     },
 
     ["Misc Equipment"] = {
         ["belt-immunity-equipment"] = {cost = 10, count = 1, play_time_locked=false},
-        ["exoskeleton-equipment"] = {cost = 100, count = 1, play_time_locked=false},
+        ["exoskeleton-equipment"] = {cost = 200, count = 1, play_time_locked=false},
         ["night-vision-equipment"] = {cost = 50, count = 1, play_time_locked=false},
 
-        ["personal-laser-defense-equipment"] = {cost = 100, count = 1, play_time_locked=false},
+        ["personal-laser-defense-equipment"] = {cost = 1000, count = 1, play_time_locked=false},
         -- ["discharge-defense-equipment"] = {cost = 1, count = 1, play_time_locked=false},
-        ["energy-shield-equipment"] = {cost = 50, count = 1, play_time_locked=false},
-        ["energy-shield-mk2-equipment"] = {cost = 500, count = 1, play_time_locked=false},
+        ["energy-shield-equipment"] = {cost = 100, count = 1, play_time_locked=false},
+        ["energy-shield-mk2-equipment"] = {cost = 1000, count = 1, play_time_locked=false},
     },
 
     ["Spidertron"] = {
-        ["spidertron"] = {cost = 5000, count = 1, play_time_locked=false},
+        ["spidertron"] = {cost = 10000, count = 1, play_time_locked=false},
         ["spidertron-remote"] = {cost = 500, count = 1, play_time_locked=false},
     },
 }

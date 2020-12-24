@@ -79,7 +79,7 @@ ENABLE_COIN_SHOP = true
 ENABLE_ITEM_AND_ENERGY_SHARING = true -- REQUIRES ENABLE_COIN_SHOP=true!
 
 -- Enable magic chunks around the map that let you buy powerful factories that smelt/assemble/process very very quickly.
-ENABLE_MAGIC_FACTORIES = false -- REQUIRES ENABLE_COIN_SHOP=true!
+ENABLE_MAGIC_FACTORIES = true -- REQUIRES ENABLE_COIN_SHOP=true!
 
 -- This inhibits enemy attacks on bases where all players are offline.
 -- Not 100% guaranteed.
@@ -146,10 +146,8 @@ PLAYER_SPAWN_START_ITEMS = {
 
 -- Items provided after EVERY respawn (disabled by default)
 PLAYER_RESPAWN_START_ITEMS = {
-    {name="pistol", count=1},
-    {name="firearm-magazine", count=100}
-}
-
+    ["pistol"]=1,
+    ["firearm-magazine"]=200
 ------------------------------------------------------------------------------------------------------------------------
 -- Distance Options
 ------------------------------------------------------------------------------------------------------------------------
@@ -320,7 +318,7 @@ OARC_CFG = {
         ["crude-oil"] =
         {
             num_patches = 2,
-            amount = 1800000,
+            amount = 300000,
             x_offset_start = -3,
             y_offset_start = 48,
             x_offset_next = 6,
