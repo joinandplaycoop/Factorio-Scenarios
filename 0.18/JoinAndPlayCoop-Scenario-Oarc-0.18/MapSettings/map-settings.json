@@ -19,7 +19,8 @@
     "pollution_with_max_forest_damage": 10000,
     "pollution_per_tree_damage": 2000,
     "pollution_restored_per_tree_damage": 500,
-    "max_pollution_to_restore_trees": 1000
+    "max_pollution_to_restore_trees": 1000,
+    "enemy_attack_pollution_consumption_modifier": 1
   },
   "enemy_evolution":
   {
