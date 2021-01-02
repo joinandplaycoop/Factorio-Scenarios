@@ -45,8 +45,8 @@ function RocketLaunchEvent(event)
         SendBroadcastMsg("Team " .. force.name .. " launched another rocket. Total " .. global.ocore.satellite_sent[force.name])
         ServerWriteFile("rocket_events", "Team " .. force.name .. " launched another rocket. Total " .. global.ocore.satellite_sent[force.name] .. "\n")
         -- Lets only send server notifications every 25 rockets after first 25 launched.
-        if global.satellite_sent[force.name] < 25 or global.satellite_sent[force.name] % 25 == 0 then
-            log_message(event, "Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name])
+        if global.ocore.satellite_sent[force.name] < 25 or global.ocore.satellite_sent[force.name] % 25 == 0 then
+            log_message(event, "Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.ocore.satellite_sent[force.name])
         end
 
     -- First sat launch for this force.
