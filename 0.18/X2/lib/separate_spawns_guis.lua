@@ -175,10 +175,10 @@ function DisplaySpawnOptions(player)
                     type = "button",
                     caption={"oarc-solo-spawn-near"},
                     style = "confirm_button"}
-    soloSpawnbuttons.add{name = "isolated_spawn_far",
-                    type = "button",
-                    caption={"oarc-solo-spawn-far"},
-                    style = "confirm_button"}
+    -- soloSpawnbuttons.add{name = "isolated_spawn_far",
+    --                 type = "button",
+    --                 caption={"oarc-solo-spawn-far"},
+    --                 style = "confirm_button"}
 
     if (global.ocfg.enable_vanilla_spawns) then
         AddLabel(soloSpawnFlow, "isolated_spawn_lbl1",
