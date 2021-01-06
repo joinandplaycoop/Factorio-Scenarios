@@ -102,7 +102,7 @@ LOCKED_RECIPES = {
 
 -- Give cheaty items on start.
 ENABLE_POWER_ARMOR_QUICK_START = false
-ENABLE_MODULAR_ARMOR_QUICK_START = false
+ENABLE_MODULAR_ARMOR_QUICK_START = true
 
 ------------------------------------------------------------------------------------------------------------------------
 -- MAP CONFIGURATION OPTIONS
