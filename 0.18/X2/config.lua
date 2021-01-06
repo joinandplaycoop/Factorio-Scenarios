@@ -37,7 +37,7 @@ ENABLE_BUDDY_SPAWN = true
 -- Frontier style rocket silo mode. This means you can't build silos, but some spawn out in the wild for you to use.
 -- if ENABLE_MAGIC_FACTORIES=false, you will find a few special areas to launch rockets from.
 -- If ENABLE_MAGIC_FACTORIES=true, you must buy a silo at one of the special chunks.
-FRONTIER_ROCKET_SILO_MODE = true
+FRONTIER_ROCKET_SILO_MODE = false
 
 -- Enable Undecorator. Removes decorative items to reduce save file size.
 ENABLE_UNDECORATOR = true
