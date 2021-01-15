@@ -20,14 +20,14 @@
   
   "autoplace_controls":
   {
-    "coal"        : {"frequency" : 0.20, "richness" : 0.30, "size" : 1.00},
-    "iron-ore"    : {"frequency" : 0.20, "richness" : 0.30, "size" : 1.00},
-    "copper-ore"  : {"frequency" : 0.20, "richness" : 0.30, "size" : 1.00},
-    "stone"       : {"frequency" : 0.20, "richness" : 0.30, "size" : 1.00},
-    "uranium-ore" : {"frequency" : 0.10, "richness" : 0.10, "size" : 1.00},
-    "crude-oil"   : {"frequency" : 0.20, "richness" : 0.50, "size" : 1.50},
-    "trees"       : {"frequency" : 0.50, "richness" : 1.00, "size" : 1.00},
-    "enemy-base"  : {"frequency" : 0.20, "richness" : 0.50, "size" : 1.00}
+    "coal"        : {"frequency" : 1, "richness" : 1, "size" : 1.00},
+    "iron-ore"    : {"frequency" : 1, "richness" : 1, "size" : 1.00},
+    "copper-ore"  : {"frequency" : 1, "richness" : 1, "size" : 1.00},
+    "stone"       : {"frequency" : 1, "richness" : 1, "size" : 1.00},
+    "uranium-ore" : {"frequency" : 1, "richness" : 1, "size" : 1.00},
+    "crude-oil"   : {"frequency" : 1, "richness" : 1, "size" : 1.00},
+    "trees"       : {"frequency" : 1, "richness" : 1.00, "size" : 1.00},
+    "enemy-base"  : {"frequency" : 1, "richness" : 1, "size" : 1.00}
   },
   
   "cliff_settings":
