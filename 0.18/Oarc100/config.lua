@@ -392,7 +392,7 @@ ENABLE_SILO_RADAR = false
 -- the fixed locations. If this is false, silos are built and assigned
 -- only to the main force. This can cause a problem for non main forces
 -- when playing with LOCK_GOODIES_UNTIL_ROCKET_LAUNCH enabled.
-ENABLE_SILO_PLAYER_BUILD = false
+ENABLE_SILO_PLAYER_BUILD = true
 
 
 --------------------------------------------------------------------------------
