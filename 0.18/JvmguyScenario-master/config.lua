@@ -24,7 +24,7 @@ scenario.config.joinedMessages = {
     "In the current game mode, a satellite must be launched from the rocket silo in the center to win!",
     "Mods Enabled: Separate Spawns, Long-Reach, Autofill",
     "WARNING:  Automate your base defenses!  Biters are active!",
-    "Hand-crafting is slowed way down.  Use the assemblers you start with. (Lazy-Bastard mode. This is to force pollution.)"
+    "Hand-crafting is slowed way down.  Use the assemblers you start with. (Lazy-Bastard mode. This is to force pollution.)",
 --    "Look in the car at your spawn for fast start items.",
 --    "The car is also your personal transport to and from the silo.",
     "Discord chat: discord.joinandplaycoop.com",
