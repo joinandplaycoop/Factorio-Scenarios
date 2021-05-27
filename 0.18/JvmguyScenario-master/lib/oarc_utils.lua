@@ -475,7 +475,9 @@ end
 
 function GivePlayerBonuses(player)
     if (scenario.config.playerBonus.character_crafting_speed_modifier~= nil) then
-        player.character.character_crafting_speed_modifier = scenario.config.playerBonus.character_crafting_speed_modifier;
+        if player.character != nil then
+            player.character.character_crafting_speed_modifier = scenario.config.playerBonus.character_crafting_speed_modifier;
+        end
     end
 end
 
