@@ -76,7 +76,7 @@ ENABLE_RESEARCH_QUEUE = true
 ENABLE_COIN_SHOP = true
 
 -- Enable item & energy sharing system. 
-ENABLE_ITEM_AND_ENERGY_SHARING = true -- REQUIRES ENABLE_COIN_SHOP=true!
+ENABLE_ITEM_AND_ENERGY_SHARING = false -- REQUIRES ENABLE_COIN_SHOP=true!
 
 -- Enable magic chunks around the map that let you buy powerful factories that smelt/assemble/process very very quickly.
 ENABLE_MAGIC_FACTORIES = true -- REQUIRES ENABLE_COIN_SHOP=true!
