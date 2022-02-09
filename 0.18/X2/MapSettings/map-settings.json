@@ -3,7 +3,7 @@
   {
      "recipe_difficulty": 0,
      "technology_difficulty": 0,
-     "technology_price_multiplier": 3,
+     "technology_price_multiplier": 1,
      "research_queue_setting": "always"
   },
   "pollution":
@@ -27,7 +27,7 @@
   {
     "enabled": true,
     "time_factor": 0.000000,
-    "destroy_factor": 0.002,
+    "destroy_factor": 0.001,
     "pollution_factor": 0.0000002
   },
   "enemy_expansion":
