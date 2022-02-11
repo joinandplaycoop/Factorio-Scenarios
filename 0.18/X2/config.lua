@@ -455,4 +455,4 @@ SILO_ISLANDS_MODE = false
 
 -- This is part of regrowth, and if both are enabled, any chunks which aren't active and have no entities will
 -- eventually be deleted over time. DO NOT USE THIS WITH MODS!
-ENABLE_WORLD_EATER = true
+ENABLE_WORLD_EATER = false
