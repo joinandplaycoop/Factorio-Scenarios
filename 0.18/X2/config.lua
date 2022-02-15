@@ -65,7 +65,7 @@ PLAYER_LIST_OFFLINE_PLAYERS = true -- List offline players as well.
 ENABLE_SHARED_TEAM_VISION = true
 
 -- Cleans up unused chunks periodically. Helps keep map size down.
-ENABLE_REGROWTH = true
+ENABLE_REGROWTH = false
 -- This removes player bases when they leave shortly after joining. Only works if you have regrowth enabled!
 ENABLE_ABANDONED_BASE_REMOVAL = true
 
