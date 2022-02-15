@@ -20,12 +20,12 @@
   
   "autoplace_controls":
   {
-    "coal"        : {"frequency" : 0.3, "richness" : 9, "size" : 0.3},
-    "iron-ore"    : {"frequency" : 0.3, "richness" : 9, "size" : 0.3},
-    "stone"       : {"frequency" : 0.3, "richness" : 9, "size" : 0.3},
-    "copper-ore"  : {"frequency" : 0.3, "richness" : 9, "size" : 0.3},
-    "uranium-ore" : {"frequency" : 0.3, "richness" : 9, "size" : 0.2},
-    "crude-oil"   : {"frequency" : 0.3, "richness" : 9, "size" : 0.3},
+    "coal"        : {"frequency" : 0.1, "richness" : 9, "size" : 0.3},
+    "iron-ore"    : {"frequency" : 0.1, "richness" : 9, "size" : 0.3},
+    "stone"       : {"frequency" : 0.1, "richness" : 9, "size" : 0.3},
+    "copper-ore"  : {"frequency" : 0.1, "richness" : 9, "size" : 0.3},
+    "uranium-ore" : {"frequency" : 0.1, "richness" : 9, "size" : 0.3},
+    "crude-oil"   : {"frequency" : 0.1, "richness" : 9, "size" : 0.3},
     "trees"       : {"frequency" : 1, "richness" : 1.00, "size" : 1.00},
     "enemy-base"  : {"frequency" : 1, "richness" : 1, "size" : 1.00}
   },
