@@ -3,7 +3,7 @@
   {
      "recipe_difficulty": 0,
      "technology_difficulty": 0,
-     "technology_price_multiplier": 1,
+     "technology_price_multiplier": 3,
      "research_queue_setting": "always"
   },
   "pollution":
@@ -21,7 +21,7 @@
     "pollution_per_tree_damage": 50,
     "pollution_restored_per_tree_damage": 10,
     "max_pollution_to_restore_trees": 20,
-    "enemy_attack_pollution_consumption_modifier": 1.25
+    "enemy_attack_pollution_consumption_modifier": 0.5
   },
   "enemy_evolution":
   {
@@ -113,8 +113,7 @@
     "min_steps_to_check_path_find_termination": 2000,
     "start_to_goal_cost_multiplier_to_terminate_path_find": 500.0,
     "overload_levels": [0, 100, 500],
-    "overload_multipliers": [2, 3, 4],
-    "negative_path_cache_delay_interval": 20
+    "overload_multipliers": [2, 3, 4]
   },
   "max_failed_behavior_count": 3
 }
