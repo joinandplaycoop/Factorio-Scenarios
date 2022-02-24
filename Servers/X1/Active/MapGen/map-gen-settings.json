@@ -36,10 +36,10 @@
     "name": "cliff",
     
     "_cliff_elevation_0_comment": "Elevation of first row of cliffs",
-    "cliff_elevation_0": 10,
+    "cliff_elevation_0": 5,
     
     "_cliff_elevation_interval_comment": "Elevation difference between successive rows of cliffs",
-    "cliff_elevation_interval": 10,
+    "cliff_elevation_interval": 5,
     
     "_richness_comment": "Multiplier for cliff continuity; 0 will result in no cliffs, 10 will make all cliff rows completely solid",
     "richness": 1
