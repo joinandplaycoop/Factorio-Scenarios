@@ -80,7 +80,7 @@ ENABLE_MAGIC_FACTORIES = false -- REQUIRES ENABLE_COIN_SHOP=true!
 
 -- This inhibits enemy attacks on bases where all players are offline.
 -- Not 100% guaranteed.
-ENABLE_OFFLINE_PROTECTION = true
+ENABLE_OFFLINE_PROTECTION = false  -- kills bots.  dont turn on
 
 -- This allows you to set the tech price multiplier for the game, but 
 -- have it only affect the main force. We just pad all non-main forces lab prod bonus.
