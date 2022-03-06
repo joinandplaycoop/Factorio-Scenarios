@@ -32,7 +32,7 @@
   },
   "enemy_expansion":
   {
-    "enabled": true,
+    "enabled": false,
     "min_base_spacing": 3,
     "max_expansion_distance": 10,
     "friendly_base_influence_radius": 2,
