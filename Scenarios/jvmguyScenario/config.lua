@@ -336,13 +336,13 @@ scenario.config.noResources = {
 }
 
 scenario.config.vanillaResources = {
---        { shape="rect", name="steel-chest", x=42,   y=-24, height=2, width=2, contents = { {name = "landfill", count=4800 } },  },
+        { shape="rect", name="steel-chest", x=42,   y=-24, height=2, width=2, contents = { {name = "landfill", count=4800 } },  },
         { shape="rect", name="steel-chest", x=42,   y=-18, height=2, width=2, contents = { {name = "iron-plate", count=4800 } },  },
         { shape="rect", name="steel-chest", x=42,   y=-12, height=2, width=2, contents = { {name = "copper-plate", count=4800 } },  },
         { shape="rect", name="steel-chest", x=42,   y=-8,  height=1, width=1, contents = { 
-            {name = "coal", count=800 },
-            {name = "stone", count=800 },
-            {name = "steel-plate", count=800 },
+            {name = "coal", count=1000 },
+            {name = "stone", count=1000 },
+            {name = "steel-plate", count=1000 },
 --            {name = "uranium-235", count=100 },
 --            {name = "uranium-238", count=500 },
          }  },
@@ -354,23 +354,23 @@ scenario.config.vanillaResources = {
             {name = "pipe", count=10},
             {name = "pipe-to-ground", count=10},
             {name = "small-electric-pole", count = 20},
-            {name = "gun-turret", count=20 },
-            {name = "piercing-rounds-magazine", count=400 },
+            -- {name = "gun-turret", count=20 },
+            -- {name = "piercing-rounds-magazine", count=400 },
             {name = "inserter", count=20},
             {name = "assembling-machine-1", count=10},
             {name = "assembling-machine-2", count=1},
 
         },  },
     
-        { shape="rect", type="coal",         x=32,  y=-41, height=14, width=30,  amount=3000,  },
-        { shape="rect", type="stone",        x=32,  y=-24, height=14, width=30,  amount=1000,  },
+        { shape="rect", type="coal",         x=32,  y=-41, height=14, width=30,  amount=5000,  },
+        { shape="rect", type="stone",        x=32,  y=-24, height=14, width=30,  amount=5000,  },
         -- { shape="rect", type="uranium-ore",  x=27, y=-24, height=14, width=12,  amount=1800,  },
-        { shape="rect", type="copper-ore",   x=32,  y=-7,  height=21, width=30,  amount=2000,  },
-        { shape="rect", type="iron-ore",     x=32,  y =18, height=21, width=30, amount=2000,  },
+        { shape="rect", type="copper-ore",   x=32,  y=-7,  height=21, width=30,  amount=5000,  },
+        { shape="rect", type="iron-ore",     x=32,  y =18, height=21, width=30, amount=5000,  },
         
-        { shape="rect", type="crude-oil", x=72, y=-6, height=1, amount=200000,  },
-        { shape="rect", type="crude-oil", x=72, y= 0, height=1, amount=200000,  },
-        { shape="rect", type="crude-oil", x=72, y= 6, height=1, amount=200000,  },
+        { shape="rect", type="crude-oil", x=72, y=-6, height=1, amount=1000000,  },
+        { shape="rect", type="crude-oil", x=72, y= 0, height=1, amount=1000000,  },
+        { shape="rect", type="crude-oil", x=72, y= 6, height=1, amount=1000000,  },
 }
 
 scenario.config.voidResources = {
@@ -767,7 +767,7 @@ MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLIME_TIME_IN_MINUTES
 --------------------------------------------------------------------------------
 
 -- Enable/Disable enemy expansion
-ENEMY_EXPANSION = false
+ENEMY_EXPANSION = true
 
 -- Divide the alien factors by this number to reduce it (or multiply if < 1)
 ENEMY_POLLUTION_FACTOR_DIVISOR = 5
