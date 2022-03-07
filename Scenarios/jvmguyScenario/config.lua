@@ -860,6 +860,7 @@ scenario.config.fermatSpiralSpawnsTemplate = {
 }
 
 scenario.config.bunkerSpawns = {
+    enabled = true,  -- added by reverend to enable teleport without silo teleport
     concrete = true,        -- pave the spawn with concrete
     -- this mostly inherits the separateSpawns config, but has a few minor differences
     firstSpawnPoint = 16,

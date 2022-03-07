@@ -286,7 +286,7 @@ function jvm.teleporter(event)
     TeleportPlayer(player)
 end
 
-if scenario.config.teleporter.enabled then
+if scenario.config.teleporter.enabled or scenario.config.bunkerSpawns.enabled then
     Event.register(defines.events.on_player_driving_changed_state, jvm.teleporter)
 end
 
