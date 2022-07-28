@@ -20,10 +20,10 @@
   
   "autoplace_controls":
   {
-    "coal"        : {"frequency" : 0.4, "richness" : 3, "size" : 1.0},
-    "iron-ore"    : {"frequency" : 0.4, "richness" : 3, "size" : 1.0},
-    "stone"       : {"frequency" : 0.4, "richness" : 3, "size" : 1.0},
-    "copper-ore"  : {"frequency" : 0.4, "richness" : 3, "size" : 1.0},
+    "coal"        : {"frequency" : 0.4, "richness" : 3, "size" : 2.0},
+    "iron-ore"    : {"frequency" : 0.4, "richness" : 3, "size" : 2.0},
+    "stone"       : {"frequency" : 0.4, "richness" : 3, "size" : 2.0},
+    "copper-ore"  : {"frequency" : 0.4, "richness" : 3, "size" : 2.0},
     "uranium-ore" : {"frequency" : 0.1, "richness" : 3, "size" : 0.5},
     "crude-oil"   : {"frequency" : 0.4, "richness" : 5, "size" : 0.3},
     "trees"       : {"frequency" : 1, "richness" : 1.00, "size" : 1.00},
