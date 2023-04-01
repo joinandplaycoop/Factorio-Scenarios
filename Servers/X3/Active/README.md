@@ -1,28 +1,28 @@
 # FactorioScenarioMultiplayerSpawn
-A custom scenario for allowing separate spawn locations in multiplayer. Designed for Co-op and PvE.
+A custom scenario for allowing separate spawn locations in multiplayer. Designed for Co-op and PvE. 
 
-## Instructions
-Download the zip.
+## Read the WIKI
+The github wiki page will have the most up to date information. If you have questions, go there first, otherwise just ask.
 
-Place it in your Factorio/scenarios/... folder
+## Versions
+Check releases for stable versions. 0.17 and 0.16 have final stable versions that will no longer be maintained.
+The latest master is for 1.0.0+
 
-It should look something like this (for my windows steam install location):
-
-C:\Users\user\AppData\Roaming\Factorio\scenarios\jvmguyScenario\control.lua
-
-
-## Configuration
-
-Look in config.lua for some controls over the different modules.  
-
-Not all configurations have been fully tested so modify at your own risk.
-
-
-## TODO
-Much needed.
+## Status
+At this time I have no more planned features and will only be in support and maintenance mode.
 
 ## Credit
-Very little of this is my own creation. It's my spin on a scenario created by Oarc.
-See https://github.com/Oarcinae/FactorioScenarioMultiplayerSpawn
+Several other portions of the code (tags, frontier style rocket silo) have also been adapted from other scenario code.
 
+Credit to 3Ra for help as well: https://github.com/3RaGaming
 
+Praise be to Mylon
+
+## Random Notes
+Feel free to submit bugs/fixes/requests/pulls/forks whatever you want.
+
+I do not plan on supporting PvP, but I will help anyone who wants to make it a configurable option.
+
+## Contact
+discord.gg/trnpcen
+oarcinae@gmail.com

@@ -1,215 +1,156 @@
 -- frontier_silo.lua
--- Nov 2016
+-- Jan 2018
+-- My take on frontier silos for my Oarc scenario
 
 require("config")
-require("oarc_utils")
+require("lib/oarc_utils")
 
-local M = {}
+--------------------------------------------------------------------------------
+-- Frontier style rocket silo stuff
+--------------------------------------------------------------------------------
 
-local function ChunkContains( chunk, pt )
-        return pt.x >= chunk.left_top.x and pt.x < chunk.right_bottom.x and
-            pt.y >= chunk.left_top.y and pt.y < chunk.right_bottom.y;
+
+function SpawnSilosAndGenerateSiloAreas()
+
+    -- Special silo islands mode "boogaloo"
+    if (global.ocfg.silo_islands) then
+
+        local num_spawns = #global.vanillaSpawns
+        local new_spawn_list = {}
+
+        -- Pick out every OTHER vanilla spawn for the rocket silos.
+        for k,v in pairs(global.vanillaSpawns) do
+            if ((k <= num_spawns/2) and (k%2==1)) then
+                SetFixedSiloPosition({x=v.x,y=v.y})
+            elseif ((k > num_spawns/2) and (k%2==0)) then
+                SetFixedSiloPosition({x=v.x,y=v.y})
+            else
+                table.insert(new_spawn_list, v)
+            end
+        end
+        global.vanillaSpawns = new_spawn_list
+
+    -- A set of fixed silo positions
+    elseif (global.ocfg.frontier_fixed_pos) then
+        for k,v in pairs(global.ocfg.frontier_pos_table) do
+            SetFixedSiloPosition(v)
+        end
+
+    -- Random locations on a circle.
+    else
+        SetRandomSiloPosition(global.ocfg.frontier_silo_count)
+
+    end
+
+    -- Freezes the game at the start to generate all the chunks.
+    GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
 end
 
+-- This creates a random silo position, stored to global.siloPosition
+-- It uses the config setting global.ocfg.frontier_silo_distance and spawns the
+-- silo somewhere on a circle edge with radius using that distance.
+function SetRandomSiloPosition(num_silos)
+    if (global.siloPosition == nil) then
+        global.siloPosition = {}
+    end
 
--- Create a rocket silo
-local function CreateRocketSilo(surface, chunkArea)
-    if CheckIfInArea(global.siloPosition, chunkArea) then
+    local random_angle_offset = math.random(0, math.pi * 2)
 
-        -- Delete any entities beneat the silo?
-        for _, entity in pairs(surface.find_entities_filtered{area = {{global.siloPosition.x-50, global.siloPosition.y-50},{global.siloPosition.x+50, global.siloPosition.y+50}}}) do
-            entity.destroy()
-        end
+    for i=1,num_silos do
+        local theta = ((math.pi * 2) / num_silos);
+        local angle = (theta * i) + random_angle_offset;
 
-        -- Set tiles below the silo
-        local tiles = {}
-        local i = 1
-        for dx = -20,20 do
-            for dy = -20,20 do
-                local position = { x=global.siloPosition.x+dx, y=global.siloPosition.y+dy }
-                if ChunkContains( chunkArea, position) then
-                    tiles[i] = {name = "grass-1", position = position}
-                    i=i+1
+        local tx = (global.ocfg.frontier_silo_distance*CHUNK_SIZE * math.cos(angle))
+        local ty = (global.ocfg.frontier_silo_distance*CHUNK_SIZE * math.sin(angle))
+
+        -- Ensure it's centered around a chunk
+        local tx = (tx - (tx % CHUNK_SIZE)) + CHUNK_SIZE/2
+        local ty = (ty - (ty % CHUNK_SIZE)) + CHUNK_SIZE/2
+
+        table.insert(global.siloPosition, {x=math.floor(tx), y=math.floor(ty)})
+
+        log("Silo position: " .. tx .. ", " .. ty .. ", " .. angle)
+    end
+end
+
+-- Sets the global.siloPosition var to the set in the config file
+function SetFixedSiloPosition(pos)
+    table.insert(global.siloPosition, pos)
+end
+
+-- Create a rocket silo at the specified positionmmmm
+-- Also makes sure tiles and entities are cleared if required.
+local function CreateRocketSilo(surface, siloPosition, force)
+
+    -- Delete any entities beneath the silo?
+    for _, entity in pairs(surface.find_entities_filtered{area = {{siloPosition.x-5,
+                                                                    siloPosition.y-6},
+                                                                    {siloPosition.x+6,
+                                                                    siloPosition.y+6}}}) do
+        entity.destroy()
+    end
+
+    -- Remove nearby enemies again
+    for _, entity in pairs(surface.find_entities_filtered{area = {{siloPosition.x-(CHUNK_SIZE*4),
+                                                                    siloPosition.y-(CHUNK_SIZE*4)},
+                                                                    {siloPosition.x+(CHUNK_SIZE*4),
+                                                                    siloPosition.y+(CHUNK_SIZE*4)}}, force = "enemy"}) do
+        entity.destroy()
+    end
+
+    -- Set tiles below the silo
+    tiles = {}
+    for dx = -6,5 do
+        for dy = -6,5 do
+            if (game.active_mods["oarc-restricted-build"]) then
+                table.insert(tiles, {name = global.ocfg.locked_build_area_tile,
+                                    position = {siloPosition.x+dx, siloPosition.y+dy}})
+            else
+                if ((dx % 2 == 0) or (dx % 2 == 0)) then
+                    table.insert(tiles, {name = "concrete",
+                                        position = {siloPosition.x+dx, siloPosition.y+dy}})
+                else
+                    table.insert(tiles, {name = "hazard-concrete-left",
+                                        position = {siloPosition.x+dx, siloPosition.y+dy}})
                 end
             end
         end
-        SetTiles(surface, tiles, false);
-        tiles = {}
-        i = 1
-        for dx = -20,20 do
-            for dy = -20,20 do
-                local position = { x=global.siloPosition.x+dx, y=global.siloPosition.y+dy }
-                if ChunkContains( chunkArea, position) then
-                    tiles[i] = {name = "concrete", position = position}
-                    i=i+1
-                end
-            end
-        end
-        
-        SetTiles(surface, tiles, true);
+    end
+    surface.set_tiles(tiles, true)
 
-        if scenario.config.silo.prebuildSilo then
-            -- Create silo and assign to main force
-            local silo = surface.create_entity{name = "rocket-silo", position = {global.siloPosition.x+0.5-8, global.siloPosition.y-8}, force = MAIN_FORCE}
-            silo.destructible = false
-            silo.minable = false
-    
-            local silo = surface.create_entity{name = "rocket-silo", position = {global.siloPosition.x+0.5+8, global.siloPosition.y-8}, force = MAIN_FORCE}
-            silo.destructible = false
-            silo.minable = false
-    
-            local silo = surface.create_entity{name = "rocket-silo", position = {global.siloPosition.x+0.5-8, global.siloPosition.y+8}, force = MAIN_FORCE}
-            silo.destructible = false
-            silo.minable = false
-    
-            local silo = surface.create_entity{name = "rocket-silo", position = {global.siloPosition.x+0.5+8, global.siloPosition.y+8}, force = MAIN_FORCE}
-            silo.destructible = false
-            silo.minable = false
-        end
+    -- Create indestructible silo and assign to a force
+    if not global.ocfg.frontier_allow_build then
+        local silo = surface.create_entity{name = "rocket-silo", position = {siloPosition.x+0.5, siloPosition.y}, force = force}
+        silo.destructible = false
+        silo.minable = false
+    end
 
-		if scenario.config.silo.prebuildBeacons then
-            -- Add Beacons
-            -- x = right, left; y = up, down
-            -- top 1 left 1
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x-8, global.siloPosition.y-9}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- top 2
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x-5, global.siloPosition.y-9}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- top 3
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x-2, global.siloPosition.y-9}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- top 4
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x+2, global.siloPosition.y-9}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- top 5
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x+5, global.siloPosition.y-9}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- top 6 right 1
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x+8, global.siloPosition.y-9}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- left 2
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x-6, global.siloPosition.y-6}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- left 3
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x-6, global.siloPosition.y-3}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- left 4
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x-6, global.siloPosition.y}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- left 5
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x-6, global.siloPosition.y+3}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- left 6 bottom 1
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x-8, global.siloPosition.y+6}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- left 7 bottom 2
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x-5, global.siloPosition.y+6}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- right 2
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x+6, global.siloPosition.y-6}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- right 3
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x+6, global.siloPosition.y-3}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- right 4
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x+6, global.siloPosition.y}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- right 5
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x+6, global.siloPosition.y+3}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- right 6 bottom 3
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x+5, global.siloPosition.y+6}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- right 7 bottom 4
-            local beacon = surface.create_entity{name = "beacon", position = {global.siloPosition.x+8, global.siloPosition.y+6}, force = MAIN_FORCE}
-            beacon.destructible = false
-            beacon.minable = false
-            -- substations
-            -- top left
-            local substation = surface.create_entity{name = "substation", position = {global.siloPosition.x-8, global.siloPosition.y-6}, force = MAIN_FORCE}
-            substation.destructible = false
-            substation.minable = false
-            -- top right
-            local substation = surface.create_entity{name = "substation", position = {global.siloPosition.x+9, global.siloPosition.y-6}, force = MAIN_FORCE}
-            substation.destructible = false
-            substation.minable = false
-            -- bottom left
-            local substation = surface.create_entity{name = "substation", position = {global.siloPosition.x-8, global.siloPosition.y+4}, force = MAIN_FORCE}
-            substation.destructible = false
-            substation.minable = false
-            -- bottom right
-            local substation = surface.create_entity{name = "substation", position = {global.siloPosition.x+9, global.siloPosition.y+4}, force = MAIN_FORCE}
-            substation.destructible = false
-            substation.minable = false
+    -- TAG it on the main force at least.
+    game.forces[global.ocfg.main_force].add_chart_tag(game.surfaces[GAME_SURFACE_NAME],
+                                            {position=siloPosition, text="Rocket Silo",
+                                                icon={type="item",name="rocket-silo"}})
 
-            -- end adding beacons
-		end
-		if scenario.config.silo.prebuildPower then
-            local radar = surface.create_entity{name = "solar-panel", position = {global.siloPosition.x-46, global.siloPosition.y+3}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "solar-panel", position = {global.siloPosition.x-46, global.siloPosition.y-3}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "solar-panel", position = {global.siloPosition.x-43, global.siloPosition.y-6}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "solar-panel", position = {global.siloPosition.x-40, global.siloPosition.y-6}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "solar-panel", position = {global.siloPosition.x-37, global.siloPosition.y-6}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "solar-panel", position = {global.siloPosition.x-37, global.siloPosition.y-3}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "solar-panel", position = {global.siloPosition.x-37, global.siloPosition.y}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "solar-panel", position = {global.siloPosition.x-37, global.siloPosition.y+3}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "solar-panel", position = {global.siloPosition.x-46, global.siloPosition.y-6}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "solar-panel", position = {global.siloPosition.x-43, global.siloPosition.y+3}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "solar-panel", position = {global.siloPosition.x-40, global.siloPosition.y+3}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "radar", position = {global.siloPosition.x-46, global.siloPosition.y}, force = MAIN_FORCE}
-            radar.destructible = false
-            local substation = surface.create_entity{name = "substation", position = {global.siloPosition.x-41, global.siloPosition.y-1}, force = MAIN_FORCE}
-            substation.destructible = false
-            local radar = surface.create_entity{name = "accumulator", position = {global.siloPosition.x-43, global.siloPosition.y-1}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "accumulator", position = {global.siloPosition.x-43, global.siloPosition.y-3}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "accumulator", position = {global.siloPosition.x-43, global.siloPosition.y+1}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "accumulator", position = {global.siloPosition.x-41, global.siloPosition.y-3}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "accumulator", position = {global.siloPosition.x-41, global.siloPosition.y+1}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "accumulator", position = {global.siloPosition.x-39, global.siloPosition.y-1}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "accumulator", position = {global.siloPosition.x-39, global.siloPosition.y-3}, force = MAIN_FORCE}
-            radar.destructible = false
-            local radar = surface.create_entity{name = "accumulator", position = {global.siloPosition.x-39, global.siloPosition.y+1}, force = MAIN_FORCE}
-            radar.destructible = false
-		end
-        
-        if scenario.config.teleporter.siloTeleportEnabled then
-            global.siloTeleportID = CreateTeleporter(surface, scenario.config.teleporter.siloPosition, "spawn")
-        end 
+    -- Make silo safe from being removed.
+    if global.ocfg.enable_regrowth then
+        RegrowthMarkAreaSafeGivenTilePos(siloPosition, 5, true)
+    end
+
+    if ENABLE_SILO_BEACONS then
+        PhilipsBeacons(surface, siloPosition, game.forces[global.ocfg.main_force])
+    end
+    if ENABLE_SILO_RADAR then
+        PhilipsRadar(surface, siloPosition, game.forces[global.ocfg.main_force])
+    end
+
+end
+
+-- Generates all rocket silos, should be called after the areas are generated
+-- Includes a crop circle
+function GenerateAllSilos()
+
+    -- Create each silo in the list
+    for idx,siloPos in pairs(global.siloPosition) do
+        CreateRocketSilo(game.surfaces[GAME_SURFACE_NAME], siloPos, global.ocfg.main_force)
     end
 end
 
@@ -225,29 +166,18 @@ function BuildSiloAttempt(event)
         e_name =event.created_entity.ghost_name
     end
 
-    -- additional check for Rocket Silo Construction mod
-    if (e_name ~= "rocket-silo" and e_name ~= "rsc-silo-stage1") then
-        return;
-    end
-    
+    if (e_name ~= "rocket-silo") then return end
+
     -- Check if it's in the right area.
     local epos = event.created_entity.position
 
---    from Oarc's code to support multiple silos
---    for k,v in pairs(global.siloPosition) do
---        if (getDistance(epos, v) < 5) then
---            if (event.created_entity.name ~= "entity-ghost") then
---                SendBroadcastMsg("Rocket silo has been built!")
---            end
---            return -- THIS MEANS WE SUCCESFULLY BUILT THE SILO (ghost or actual building.)
---        end
---    end
-
-    if DistanceFromPoint( epos, global.siloPosition) < 5 then
-        if (event.created_entity.name ~= "entity-ghost") then
-            SendBroadcastMsg("Rocket silo has been built!")
+    for k,v in pairs(global.siloPosition) do
+        if (getDistance(epos, v) <= 1) then
+            if (event.created_entity.name ~= "entity-ghost") then
+                SendBroadcastMsg("Rocket silo has been built!")
+            end
+            return -- THIS MEANS WE SUCCESFULLY BUILT THE SILO (ghost or actual building.)
         end
-        return -- THIS MEANS WE SUCCESFULLY BUILT THE SILO (ghost or actual building.)
     end
 
     -- If we get here, means it wasn't in a valid position. Need to remove it.
@@ -263,103 +193,209 @@ function BuildSiloAttempt(event)
     end
 end
 
--- Remove rocket silo from recipes
-function RemoveRocketSiloRecipe(event)
-    RemoveRecipe(event, "rocket-silo")
-end
+-- Generate clean land and trees around silo area
+function GenerateRocketSiloChunks()
 
--- Generates the rocket silo during chunk generation event
--- Includes a crop circle
-function GenerateRocketSiloChunk(event)
-    local surface = event.surface
-    if surface.name ~= GAME_SURFACE_NAME then return end
-    local chunkArea = event.area
+    -- Silo generation can take awhile depending on the number of silos.
+    -- if (game.tick < #global.siloPosition*10*TICKS_PER_SECOND) then
+        local surface = game.surfaces[GAME_SURFACE_NAME]
+        -- local chunkArea = event.area
 
-    local safeArea = {left_top=
-                        {x=global.siloPosition.x-150,
-                         y=global.siloPosition.y-150},
-                      right_bottom=
-                        {x=global.siloPosition.x+150,
-                         y=global.siloPosition.y+150}}
-                             
+        -- local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
+        --                          y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
 
-    -- Clear enemies directly next to the rocket
-    if CheckIfChunkIntersects(chunkArea,safeArea) then
-        for _, entity in pairs(surface.find_entities_filtered{area = chunkArea, force = "enemy"}) do
-            entity.destroy()
+        for _,siloPos in pairs(global.siloPosition) do
+            local siloArea = {left_top=
+                                {x=siloPos.x-(CHUNK_SIZE*2),
+                                 y=siloPos.y-(CHUNK_SIZE*2)},
+                              right_bottom=
+                                {x=siloPos.x+(CHUNK_SIZE*2),
+                                 y=siloPos.y+(CHUNK_SIZE*2)}}
+
+
+            -- Clear enemies directly next to the rocket
+            -- if CheckIfInArea(chunkAreaCenter,siloArea) then
+                for _, entity in pairs(surface.find_entities_filtered{area = siloArea, force = "enemy"}) do
+                    entity.destroy()
+                end
+
+                -- Remove trees/resources inside the spawn area
+                RemoveInCircle(surface, siloArea, "tree", siloPos, (CHUNK_SIZE*1.5)+5)
+                RemoveInCircle(surface, siloArea, "resource", siloPos, (CHUNK_SIZE*1.5)+5)
+                RemoveInCircle(surface, siloArea, "cliff", siloPos, (CHUNK_SIZE*1.5)+5)
+                RemoveDecorationsArea(surface, siloArea)
+
+                -- Create rocket silo
+                CreateCropOctagon(surface, siloPos, siloArea, (CHUNK_SIZE*1.5)+4, "landfill")
+            -- end
         end
+    -- end
+end
 
-        -- Create rocket silo
-        CreateCropCircle(surface, global.siloPosition, chunkArea, 70)
-        
-        CreateRocketSilo(surface, chunkArea)
+-- Generate chunks where we plan to place the rocket silos.
+function GenerateRocketSiloAreas(surface)
+    for idx,siloPos in pairs(global.siloPosition) do
+        surface.request_to_generate_chunks({siloPos.x, siloPos.y}, 1)
+    end
+    if (global.ocfg.frontier_silo_vision) then
+        ChartRocketSiloAreas(surface, game.forces[global.ocfg.main_force])
+    end
+
+    game.surfaces[GAME_SURFACE_NAME].force_generate_chunk_requests() -- Block and generate all to be sure.
+
+    GenerateRocketSiloChunks()
+    GenerateAllSilos()
+end
+
+-- Chart chunks where we plan to place the rocket silos.
+function ChartRocketSiloAreas(surface, force)
+    for idx,siloPos in pairs(global.siloPosition) do
+        force.chart(surface, {{siloPos.x-(CHUNK_SIZE*1),
+                                siloPos.y-(CHUNK_SIZE*1)},
+                                {siloPos.x+(CHUNK_SIZE*1),
+                                siloPos.y+(CHUNK_SIZE*1)}})
     end
 end
 
-function ChartRocketSiloArea(force)
-    if scenario.config.silo.chartSiloArea then
-        force.chart(game.surfaces[GAME_SURFACE_NAME], {{global.siloPosition.x-(CHUNK_SIZE*2), global.siloPosition.y-(CHUNK_SIZE*2)}, {global.siloPosition.x+(CHUNK_SIZE*2), global.siloPosition.y+(CHUNK_SIZE*2)}})
-    end
+function PhilipsBeacons(surface, siloPos, force)
+
+    -- Add Beacons
+    -- x = right, left; y = up, down
+    -- top 1 left 1
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-8, siloPos.y-8}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- top 2
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-5, siloPos.y-8}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- top 3
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-2, siloPos.y-8}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- top 4
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+2, siloPos.y-8}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- top 5
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+5, siloPos.y-8}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- top 6 right 1
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+8, siloPos.y-8}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- left 2
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-8, siloPos.y-5}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- left 3
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-8, siloPos.y-2}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- left 4
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-8, siloPos.y+2}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- left 5
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-8, siloPos.y+5}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- left 6 bottom 1
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-8, siloPos.y+8}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- left 7 bottom 2
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-5, siloPos.y+8}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- right 2
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+8, siloPos.y-5}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- right 3
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+8, siloPos.y-2}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- right 4
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+8, siloPos.y+2}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- right 5
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+8, siloPos.y+5}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- right 6 bottom 3
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+5, siloPos.y+8}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- right 7 bottom 4
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+8, siloPos.y+8}, force = force}
+    beacon.destructible = false
+    beacon.minable = false
+    -- substations
+    -- top left
+    local substation = surface.create_entity{name = "substation", position = {siloPos.x-5, siloPos.y-5}, force = force}
+    substation.destructible = false
+    substation.minable = false
+    -- top right
+    local substation = surface.create_entity{name = "substation", position = {siloPos.x+6, siloPos.y-5}, force = force}
+    substation.destructible = false
+    substation.minable = false
+    -- bottom left
+    local substation = surface.create_entity{name = "substation", position = {siloPos.x-5, siloPos.y+6}, force = force}
+    substation.destructible = false
+    substation.minable = false
+    -- bottom right
+    local substation = surface.create_entity{name = "substation", position = {siloPos.x+6, siloPos.y+6}, force = force}
+    substation.destructible = false
+    substation.minable = false
+
+    -- end adding beacons
 end
 
--- This creates a random silo position, stored to global.siloPosition
--- It uses the config setting SILO_CHUNK_DISTANCE and spawns the silo somewhere
--- on a circle edge with radius using that distance.
-function SetRandomSiloPosition()
-    if (global.siloPosition == nil) then
-        -- Get an X,Y on a circle far away.
-        distX = math.random(0,SILO_CHUNK_DISTANCE_X)
-        distY = RandomNegPos() * math.floor(math.sqrt(SILO_CHUNK_DISTANCE_X^2 - distX^2))
-        distX = RandomNegPos() * distX
+function PhilipsRadar(surface, siloPos, force)
 
-        -- Set those values.
-        local siloX = distX*CHUNK_SIZE + CHUNK_SIZE/2
-        local siloY = distY*CHUNK_SIZE + CHUNK_SIZE/2
-        global.siloPosition = {x = siloX, y = siloY}
-    end
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-43, siloPos.y+3}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-43, siloPos.y-3}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-40, siloPos.y-6}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-37, siloPos.y-6}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-34, siloPos.y-6}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-34, siloPos.y-3}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-34, siloPos.y}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-34, siloPos.y+3}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-43, siloPos.y-6}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-40, siloPos.y+3}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-37, siloPos.y+3}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "radar", position = {siloPos.x-43, siloPos.y}, force = force}
+    radar.destructible = false
+    local substation = surface.create_entity{name = "substation", position = {siloPos.x-38, siloPos.y-1}, force = force}
+    substation.destructible = false
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-40, siloPos.y-1}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-40, siloPos.y-3}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-40, siloPos.y+1}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-38, siloPos.y-3}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-38, siloPos.y+1}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-36, siloPos.y-1}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-36, siloPos.y-3}, force = force}
+    radar.destructible = false
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-36, siloPos.y+1}, force = force}
+    radar.destructible = false
 end
-
--- Sets the global.siloPosition var to the set in the config file
-function SetFixedSiloPosition()
-    if (global.siloPosition == nil) then
-        global.siloPosition = scenario.config.silo.position
-    end
-end
-
-function silo_on_init(event)
-    if scenario.config.silo.randomSiloPostion then
-        SetRandomSiloPosition()
-    else
-        SetFixedSiloPosition()
-    end
-    ChartRocketSiloArea(game.forces[MAIN_FORCE])
-end
-
-function silo_on_built_entity(event)
-    if scenario.config.silo.restrictSiloBuild then
-        BuildSiloAttempt(event)
-    end
-end
-
-
-function silo_on_chunk_generated(event)
-    if scenario.config.silo.frontierSilo then
-        if event.surface.name == GAME_SURFACE_NAME then
-            GenerateRocketSiloChunk(event)
-        end
-    end
-end
-
-function silo_on_rocket_launch(event)
-    if scenario.config.silo.handleLaunch then
-        RocketLaunchEvent(event)
-    end
-end
-
--- Event.register(-1, silo_on_init)
-Event.register(defines.events.on_built_entity, silo_on_built_entity)
-Event.register(defines.events.on_chunk_generated, silo_on_chunk_generated)
-Event.register(defines.events.on_rocket_launched, silo_on_rocket_launch)
-
-return M;
-    

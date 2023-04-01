@@ -1,10 +1,10 @@
 {
   "difficulty_settings":
   {
-     "recipe_difficulty": 0,
-     "technology_difficulty": 0,
-     "technology_price_multiplier": 3,
-     "research_queue_setting": "always"
+    "recipe_difficulty": 0,
+    "technology_difficulty": 0,
+    "technology_price_multiplier": 1,
+    "research_queue_setting": "after-victory"
   },
   "pollution":
   {
@@ -21,20 +21,20 @@
     "pollution_per_tree_damage": 50,
     "pollution_restored_per_tree_damage": 10,
     "max_pollution_to_restore_trees": 20,
-    "enemy_attack_pollution_consumption_modifier": 1.25
+    "enemy_attack_pollution_consumption_modifier": 1
   },
   "enemy_evolution":
   {
     "enabled": true,
-    "time_factor": 0.000000,
+    "time_factor": 0.000004,
     "destroy_factor": 0.002,
-    "pollution_factor": 0.0000002
+    "pollution_factor": 0.0000009
   },
   "enemy_expansion":
   {
     "enabled": true,
     "min_base_spacing": 3,
-    "max_expansion_distance": 10,
+    "max_expansion_distance": 7,
     "friendly_base_influence_radius": 2,
     "enemy_building_influence_radius": 2,
     "building_coefficient": 0.1,
@@ -45,7 +45,7 @@
     "settler_group_min_size": 5,
     "settler_group_max_size": 20,
     "min_expansion_cooldown": 14400,
-    "max_expansion_cooldown": 108000
+    "max_expansion_cooldown": 216000
   },
   "unit_group":
   {

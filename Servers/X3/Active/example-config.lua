@@ -11,10 +11,10 @@
 --------------------------------------------------------------------------------
 
 -- This stuff is shown in the welcome GUI and Info panel. Make sure it's valid.
-WELCOME_MSG_TITLE = "Join and play Coop"
-WELCOME_MSG = "Welcome to Join and play Coop!" -- Printed to player on join as well.
+WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE test title!]"
+WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE test msg!]" -- Printed to player on join as well.
 SERVER_MSG = "Rules: Be polite. Ask before changing other players's stuff. Have fun!\n"..
-"Here you can join the discord : discord.joinandplaycoop.com Here you can look at the status of the server status.joinandplaycoop.com"
+"This server is running a custom scenario that allows individual starting areas on the map."
 
 SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
 "Item & energy sharing system! No attacks on your base while you are offline!\n"..
@@ -22,8 +22,8 @@ SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
 "You can be on the main team or your own. All teams are friendly.\n"..
 "If you leave in the first 15 minutes, your base and character will be deleted!"
 
-CONTACT_MSG = "Contact: admin@poli.fun"
-DISCORD_INV = "discord.joinandplaycoop.co"
+CONTACT_MSG = "Contact: SteamID:Oarc | oarcinae@gmail.com | Discord:Oarc#8695"
+DISCORD_INV = "discord.gg/trnpcen"
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Module Enables
@@ -73,17 +73,17 @@ ENABLE_ABANDONED_BASE_REMOVAL = true
 ENABLE_RESEARCH_QUEUE = true
 
 -- This enables coin drops from enemies and a shop (GUI) to buy stuff from.
-ENABLE_COIN_SHOP = true
+ENABLE_COIN_SHOP = false
 
 -- Enable item & energy sharing system. 
-ENABLE_ITEM_AND_ENERGY_SHARING = true -- REQUIRES ENABLE_COIN_SHOP=true!
+ENABLE_ITEM_AND_ENERGY_SHARING = false -- REQUIRES ENABLE_COIN_SHOP=true!
 
 -- Enable magic chunks around the map that let you buy powerful factories that smelt/assemble/process very very quickly.
-ENABLE_MAGIC_FACTORIES = true -- REQUIRES ENABLE_COIN_SHOP=true!
+ENABLE_MAGIC_FACTORIES = false -- REQUIRES ENABLE_COIN_SHOP=true!
 
 -- This inhibits enemy attacks on bases where all players are offline.
 -- Not 100% guaranteed.
-ENABLE_OFFLINE_PROTECTION = false
+ENABLE_OFFLINE_PROTECTION = true
 
 -- This allows you to set the tech price multiplier for the game, but 
 -- have it only affect the main force. We just pad all non-main forces lab prod bonus.
@@ -92,7 +92,7 @@ ENABLE_FORCE_LAB_PROD_BONUS = true
 
 -- Lock various recipes and technologies behind a rocket launch.
 -- Each team/force must launch their own rocket to unlock this!
-LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = false
+LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = true
 LOCKED_TECHNOLOGIES = {
     {t="atomic-bomb"},{t="power-armor-mk2"},{t="artillery"},{t="spidertron"}
 }
@@ -102,7 +102,7 @@ LOCKED_RECIPES = {
 
 -- Give cheaty items on start.
 ENABLE_POWER_ARMOR_QUICK_START = false
-ENABLE_MODULAR_ARMOR_QUICK_START = true
+ENABLE_MODULAR_ARMOR_QUICK_START = false
 
 ------------------------------------------------------------------------------------------------------------------------
 -- MAP CONFIGURATION OPTIONS
@@ -116,7 +116,7 @@ ENABLE_MODULAR_ARMOR_QUICK_START = true
 -- of the map, resources near to your spawn point scale so you aren't
 -- surrounded by 100M patches or something. This is useful depending on what
 -- map gen settings you pick.
-SCALE_RESOURCES_AROUND_SPAWNS = false
+SCALE_RESOURCES_AROUND_SPAWNS = true
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Alien Options
@@ -135,20 +135,21 @@ OARC_MODIFIED_ENEMY_SPAWNING = true
 PLAYER_SPAWN_START_ITEMS = {
     ["pistol"]=1,
     ["firearm-magazine"]=200,
-    ["iron-plate"]=16,
-    ["burner-mining-drill"] = 2,
-    ["stone-furnace"] = 2,
-    --["coal"] = 50,
-    --["stone"] = 50,
+    ["iron-plate"]=100,
+    ["burner-mining-drill"] = 4,
+    ["stone-furnace"] = 4,
+    ["coal"] = 50,
+    ["stone"] = 50,
 
-    --["coin"] = 2500, -- Don't give coins unless you have shared chests enabled.
+    ["coin"] = 2500, -- Don't give coins unless you have shared chests enabled.
 }
 
 -- Items provided after EVERY respawn (disabled by default)
 PLAYER_RESPAWN_START_ITEMS = {
-    ["pistol"]=1,
-    ["firearm-magazine"]=200
+    -- {name="pistol", count=1},
+    -- {name="firearm-magazine", count=100}
 }
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Distance Options
 ------------------------------------------------------------------------------------------------------------------------
@@ -157,12 +158,12 @@ PLAYER_RESPAWN_START_ITEMS = {
 -- chunks. It ensures the spawn area isn't too near generated/explored/existing
 -- area. The larger you make this, the further away players will spawn from
 -- generated map area (even if it is not visible on the map!).
-CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS = 15
+CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS = 10
 
 -- Near Distance in chunks
 -- When a player selects "near" spawn, they will be in or as close to this range as possible.
-NEAR_MIN_DIST = 20
-NEAR_MAX_DIST = 70
+NEAR_MIN_DIST = 50
+NEAR_MAX_DIST = 100
 
 -- Far Distance in chunks
 -- When a player selects "far" spawn, they will be at least this distance away.
@@ -319,7 +320,7 @@ OARC_CFG = {
         ["crude-oil"] =
         {
             num_patches = 2,
-            amount = 600000,
+            amount = 900000,
             x_offset_start = -3,
             y_offset_start = 48,
             x_offset_next = 6,
@@ -335,7 +336,7 @@ OARC_CFG = {
 -- Separate teams
 -- This allows you to join your own force/team. Everyone is still COOP/PvE, all
 -- teams are friendly and cease-fire.
-ENABLE_SEPARATE_TEAMS = false
+ENABLE_SEPARATE_TEAMS = true
 
 -- Main force is what default players join
 MAIN_FORCE = "Main Force"
@@ -400,7 +401,7 @@ ENABLE_SILO_PLAYER_BUILD = true
 --------------------------------------------------------------------------------
 BUILD_DIST_BONUS = 64
 REACH_DIST_BONUS = BUILD_DIST_BONUS
-RESOURCE_DIST_BONUS = 7
+RESOURCE_DIST_BONUS = 2
 
 --------------------------------------------------------------------------------
 -- Autofill Options
@@ -455,4 +456,4 @@ SILO_ISLANDS_MODE = false
 
 -- This is part of regrowth, and if both are enabled, any chunks which aren't active and have no entities will
 -- eventually be deleted over time. DO NOT USE THIS WITH MODS!
-ENABLE_WORLD_EATER = true
+ENABLE_WORLD_EATER = false 
