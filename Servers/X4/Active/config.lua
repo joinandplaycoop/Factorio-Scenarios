@@ -336,17 +336,17 @@ scenario.config.noResources = {
 }
 
 scenario.config.vanillaResources = {
-        { shape="rect", name="steel-chest", x=42,   y=-24, height=2, width=2, contents = { {name = "landfill", count=4800 } },  },
-        { shape="rect", name="steel-chest", x=42,   y=-18, height=2, width=2, contents = { {name = "iron-plate", count=4800 } },  },
-        { shape="rect", name="steel-chest", x=42,   y=-12, height=2, width=2, contents = { {name = "copper-plate", count=4800 } },  },
-        { shape="rect", name="steel-chest", x=42,   y=-8,  height=1, width=1, contents = { 
+        { shape="rect", name="steel-chest", x=26,   y=-24, height=2, width=2, contents = { {name = "landfill", count=4800 } },  },
+        { shape="rect", name="steel-chest", x=26,   y=-18, height=2, width=2, contents = { {name = "iron-plate", count=4800 } },  },
+        { shape="rect", name="steel-chest", x=26,   y=-12, height=2, width=2, contents = { {name = "copper-plate", count=4800 } },  },
+        { shape="rect", name="steel-chest", x=26,   y=-8,  height=1, width=1, contents = { 
             {name = "coal", count=1000 },
             {name = "stone", count=1000 },
             {name = "steel-plate", count=1000 },
 --            {name = "uranium-235", count=100 },
 --            {name = "uranium-238", count=500 },
          }  },
-        { shape="rect", name="steel-chest", x=42,   y=0,  height=1, width=1, contents = { 
+        { shape="rect", name="steel-chest", x=26,   y=0,  height=1, width=1, contents = { 
             -- we can simulate no-hand-crafting by making hand crafting really slow, and providing an asm2.
             {name = "offshore-pump", count = 1},
             {name = "boiler", count = 10},
